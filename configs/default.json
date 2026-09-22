@@ -1,0 +1,39 @@
+{
+  "retrieval": {
+    "question_indices": "all",
+    "top_k_anchor": 20,
+    "expansion_top_k": 2,
+    "path_beam_size": 20,
+    "top_k_final": 20,
+    "max_iter": 3,
+    "candidate_cap": null,
+    "l0_semantic_inject_k": 10,
+    "expansion_mode": "semantic_weak_structure",
+    "structure_alpha": 0.1,
+    "redundancy_gamma": 0.2,
+    "selection_name": "full_rerank_top20",
+    "selection_alpha": 0.75,
+    "selection_beta": 0.2,
+    "selection_delta": 0.05,
+    "mechanism_top_m": 20,
+    "path_selection_mode": "rerank",
+    "path_alpha": 0.85,
+    "path_beta": 0.15,
+    "path_delta": 0.05,
+    "final_selection_mode": "all_visited",
+    "local_rerank_model": "BAAI/bge-reranker-v2-m3",
+    "rerank_device": "cuda:0",
+    "rerank_batch_size": 64,
+    "local_rerank_max_length": 512,
+    "question_workers": 8
+  },
+  "generation": {
+    "top_k_evidence": 20,
+    "workers": 8,
+    "gen_workers": 8,
+    "timeout": 180.0,
+    "skip_rsim": false,
+    "skip_gen": false,
+    "gen_llm_only": false
+  }
+}
