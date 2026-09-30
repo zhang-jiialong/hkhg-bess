@@ -4,7 +4,6 @@ import asyncio
 
 import numpy as np
 
-# from .utils import EmbeddingFunc
 
 TextChunkSchema = TypedDict(
     "TextChunkSchema",
@@ -15,14 +14,13 @@ T = TypeVar("T")
 
 
 class UnlimitedSemaphore:
-    """A context manager that allows unlimited access."""
+
 
     async def __aenter__(self):
         pass
 
     async def __aexit__(self, exc_type, exc, tb):
         pass
-
 
 
 @dataclass
@@ -45,38 +43,38 @@ class EmbeddingFunc:
 
 @dataclass
 class QueryParam:
-    # use synonyms edge in planning and reasoning graph
+
     get_synonyms: bool = True
-    # use target hyperedges as seed in planning and reasoning graph
+
     with_target_hyperedges: bool = True
-    # include source text chunks as context for step answer and final answer generation
+
     with_src_chunks: bool = True
-    # include plan context graph in plan initialisation
+
     with_plan_context: bool = True
-    # include planning module
+
     with_planning: bool = True
-    
+
     max_plan_depth: int = 3
-    
+
     nb_of_init_plans: int = 2
-    # ReasoningDAGAgent
+
     max_nb_of_answers: int = 2
-    # DAG frontier search mode in reasoning
+
     search_tree_mode: Literal["DFS", "BFS"] = "DFS"
 
-    # EOW based + LLM dir selection
+
     dir_selection: Literal["EOW", "ALL", "RAND"] = "ALL"
-    # EW based daft path selection
+
     form_path_selection: Literal["EW", "RAND"] = "EW"
 
-    # llm only / emb only / hybrid Entity Score Mode in reasoning
+
     score_mode: Literal["LLM", "EMB", "HYBRID"] = "HYBRID"
-    # for HYBRID SCORE MODE
+
     emb_filter_threshold: float = 0.5
-    # emb models in planning and reasoning
+
     emb_model: Literal["SBERT", "OPENAI"] = "OPENAI"
 
-    # ReasoningStep
+
     max_paths: int = 20
     max_depth: int = 3
     max_width: int = 3
@@ -86,7 +84,7 @@ class QueryParam:
     subquestion_guided: bool = False
 
     def print(self):
-        """Pretty-print all configuration parameters in aligned text form."""
+
         data = asdict(self)
         key_width = max(len(k) for k in data)
         print("=" * (key_width + 25))
@@ -97,18 +95,17 @@ class QueryParam:
         print("=" * (key_width + 25))
 
 
-
 @dataclass
 class StorageNameSpace:
     namespace: str
     global_config: dict
 
     async def index_done_callback(self):
-        """commit the storage operations after indexing"""
+
         pass
 
     async def query_done_callback(self):
-        """commit the storage operations after querying"""
+
         pass
 
 
@@ -121,9 +118,8 @@ class BaseVectorStorage(StorageNameSpace):
         raise NotImplementedError
 
     async def upsert(self, data: dict[str, dict]):
-        """Use 'content' field from value for embedding, use key as id.
-        If embedding_func is None, use 'embedding' field from value
-        """
+
+
         raise NotImplementedError
 
 
@@ -143,7 +139,7 @@ class BaseKVStorage(Generic[T], StorageNameSpace):
         raise NotImplementedError
 
     async def filter_keys(self, data: list[str]) -> set[str]:
-        """return un-exist keys"""
+
         raise NotImplementedError
 
     async def upsert(self, data: dict[str, T]):

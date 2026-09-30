@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 
 from __future__ import annotations
 
@@ -139,8 +139,8 @@ class LocalReranker(BaseReranker):
         if not evidence_texts:
             return []
         scores: list[float] = []
-        # A single local cross-encoder instance is shared by question workers.
-        # Serialize GPU forward passes to keep memory stable.
+
+
         with self._lock:
             for start in range(0, len(evidence_texts), self.batch_size):
                 batch = evidence_texts[start : start + self.batch_size]
@@ -160,7 +160,7 @@ class LocalReranker(BaseReranker):
 
 
 class SemanticFallbackReranker(BaseReranker):
-    """Only for debugging path counts; not a formal reranker experiment."""
+
 
     name = "semantic-fallback-debug-only"
 
@@ -231,8 +231,8 @@ def clean_fact_core(raw: str, max_chars: int = 500) -> str:
             parts.append(cleaned)
     if not parts:
         return ""
-    # L0 often stores the same sentence twice around <SEP>; keep the first
-    # non-empty unique fact to avoid duplicating evidence for the reranker.
+
+
     fact = parts[0]
     if len(fact) > max_chars:
         fact = fact[:max_chars].rstrip() + "..."
@@ -356,8 +356,8 @@ def path_level_rerank(
     candidate_paths = dedupe_paths(candidate_paths)
     candidate_count_before_cap = len(candidate_paths)
     if candidate_cap is not None and candidate_cap > 0 and len(candidate_paths) > candidate_cap:
-        # Engineering protection only. This is intentionally not semantic-topK;
-        # it keeps deterministic path order and should remain disabled by default.
+
+
         candidate_paths = sorted(candidate_paths, key=path_key)[:candidate_cap]
     for path in candidate_paths:
         path.text = build_path_text(retriever, path)
@@ -445,7 +445,7 @@ def expand_l2_paths(
     expanded_paths = dedupe_paths(expanded_paths)
     expanded_ids = {path.last_edge for path in expanded_paths}
     visited.update(expanded_ids)
-    # Downward entry includes both original L2 paths and appended expanded-L2 paths.
+
     combined = dedupe_paths(l2_paths + expanded_paths)
     return combined, {
         "stage": "L2_same_layer_expansion",

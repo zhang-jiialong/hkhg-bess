@@ -84,7 +84,7 @@ async def _handle_entity_relation_summary(
     )
 
     tokens = encode_string_by_tiktoken(description, model_name=tiktoken_model_name)
-    if len(tokens) < summary_max_tokens:  # No need for summary
+    if len(tokens) < summary_max_tokens:
         return description
     prompt_template = PROMPTS["summarize_entity_descriptions"]
 
@@ -140,7 +140,7 @@ async def _handle_single_entity_extraction(
 ):
     if len(record_attributes) < 5 or record_attributes[0] != '"entity"' or now_hyper_relation == "":
         return None
-    # add this record as a node in the G
+
     entity_name = clean_str(record_attributes[1].upper())
     if not entity_name.strip():
         return None
@@ -167,7 +167,7 @@ async def _handle_single_hyperrelation_extraction(
 ):
     if len(record_attributes) < 3 or record_attributes[0] != '"hyper-relation"':
         return None
-    # add this record as edge
+
     knowledge_fragment = clean_str(record_attributes[1])
     edge_source_id = chunk_key
     weight = (
@@ -193,8 +193,8 @@ def _normalize_argument_role(raw_role: str | None) -> str:
 
 def _canonical_entity_key(raw_entity: Any) -> str:
     text = clean_str(str(raw_entity or "").strip())
-    # Graph candidates may be stored as '"DISPLAY"', while the LLM often returns DISPLAY.
-    # Compare entities on a quote-insensitive canonical form, then restore the graph entity name.
+
+
     text = text.replace('\"', '"').strip()
     text = text.strip('"').strip("'").strip()
     return clean_str(text.upper())
@@ -499,10 +499,6 @@ async def _merge_hyperedges_then_upsert(
     return node_data
 
 
-
-
-
-
 async def _merge_nodes_then_upsert(
     entity_name: str,
     nodes_data: list[dict],
@@ -551,8 +547,6 @@ async def _merge_nodes_then_upsert(
     return node_data
 
 
-
-
 async def _merge_edges_then_upsert(
     entity_name: str,
     nodes_data: list[dict],
@@ -560,17 +554,17 @@ async def _merge_edges_then_upsert(
     global_config: dict,
 ):
     edge_data = []
-    
+
     for node in nodes_data:
         source_id = node["source_id"]
         hyper_relation = node["hyper_relation"]
         weight = node["weight"]
         argument_role = _normalize_argument_role(node.get("argument_role"))
-        
+
         already_weights = []
         already_source_ids = []
         existing_argument_roles: list[dict] = []
-        
+
         if await knowledge_graph_inst.has_edge(hyper_relation, entity_name):
             already_edge = await knowledge_graph_inst.get_edge(hyper_relation, entity_name)
             already_weights.append(already_edge["weight"])
@@ -580,7 +574,7 @@ async def _merge_edges_then_upsert(
             existing_argument_roles = _load_argument_roles(
                 already_edge.get("argument_roles_json")
             )
-        
+
         weight = sum([weight] + already_weights)
         source_id = GRAPH_FIELD_SEP.join(
             set([source_id] + already_source_ids)
@@ -623,9 +617,8 @@ async def extract_entities(
     entity_extract_max_gleaning = global_config["entity_extract_max_gleaning"]
 
 
-
     ordered_chunks = list(chunks.items())
-    # add language and example number params to prompt
+
     language = global_config["addon_params"].get(
         "language", PROMPTS["DEFAULT_LANGUAGE"]
     )
@@ -647,7 +640,7 @@ async def extract_entities(
         entity_types=",".join(entity_types),
         language=language,
     )
-    # add example's format
+
     examples = examples.format(**example_context_base)
 
     entity_extract_prompt = PROMPTS["entity_extraction"]
@@ -655,7 +648,7 @@ async def extract_entities(
         tuple_delimiter=PROMPTS["DEFAULT_TUPLE_DELIMITER"],
         record_delimiter=PROMPTS["DEFAULT_RECORD_DELIMITER"],
         completion_delimiter=PROMPTS["DEFAULT_COMPLETION_DELIMITER"],
-        # entity_types=",".join(entity_types),
+
         examples=examples,
         language=language,
     )
@@ -672,7 +665,7 @@ async def extract_entities(
         chunk_key = chunk_key_dp[0]
         chunk_dp = chunk_key_dp[1]
         content = chunk_dp["content"]
-        # hint_prompt = entity_extract_prompt.format(**context_base, input_text=content)
+
         hint_prompt = entity_extract_prompt.format(
             **context_base, input_text="{input_text}"
         ).format(**context_base, input_text=content)
@@ -695,12 +688,11 @@ async def extract_entities(
                 break
 
 
-        # seperate llm response into records (hyper-relation + entities)
         records = split_string_by_multi_markers(
             final_result,
             [context_base["record_delimiter"], context_base["completion_delimiter"]],
         )
-        
+
 
         maybe_nodes = defaultdict(list)
         maybe_edges = defaultdict(list)
@@ -714,11 +706,7 @@ async def extract_entities(
                 record, [context_base["tuple_delimiter"]]
             )
 
-            # if record is hyper-relation
-            # dict(
-            # hyper_relation="<hyperedge>"+knowledge_fragment,
-            # weight=weight,
-            # source_id=edge_source_id,)
+
             if_relation = await _handle_single_hyperrelation_extraction(
                 record_attributes, chunk_key
             )
@@ -726,19 +714,10 @@ async def extract_entities(
                 maybe_edges[if_relation["hyper_relation"]].append(
                     if_relation
                 )
-                # start processing a new hyper-relation
+
                 now_hyper_relation = if_relation["hyper_relation"]
 
 
-            # if record is entity
-            # dict(
-            # entity_name=entity_name,
-            # entity_type=entity_type,
-            # description=entity_description,
-            # weight=weight,
-            # hyper_relation=hyper_relation,
-            # source_id=entity_source_id,
-            # )
             if_entities = await _handle_single_entity_extraction(
                 record_attributes, chunk_key, now_hyper_relation
             )
@@ -758,7 +737,7 @@ async def extract_entities(
                 maybe_edges=maybe_edges,
                 hyperedge_roles=hyperedge_roles,
             )
-        # number of chunks processed    
+
         already_processed += 1
         already_entities += len(maybe_nodes)
         already_relations += len(maybe_edges)
@@ -772,20 +751,9 @@ async def extract_entities(
         )
         return dict(maybe_nodes), dict(maybe_edges)
 
-    # # without concurrency limit
-    # results = []
-    # for result in tqdm_async(
-    #     asyncio.as_completed([_process_single_content(c) for c in ordered_chunks]),
-    #     total=len(ordered_chunks),
-    #     desc="Extracting entities from chunks",
-    #     unit="chunk",
-    # ):
-    #     results.append(await result)
 
-    ################
-    # concurrency limit
     max_concurrency = global_config["max_concurrency"]
-    # max_concurrency = 4
+
 
     semaphore = asyncio.Semaphore(max_concurrency)
 
@@ -802,8 +770,7 @@ async def extract_entities(
         unit="chunk",
     ):
         results.append(await result)
-    #################
-    
+
 
     maybe_nodes = defaultdict(list)
     maybe_edges = defaultdict(list)
@@ -812,15 +779,14 @@ async def extract_entities(
             maybe_nodes[k].extend(v)
         for k, v in m_edges.items():
             maybe_edges[k].extend(v)
-            
+
     logger.info("Inserting hyperedges into storage...")
     all_hyperedges_data = []
     for result in tqdm_async(
         asyncio.as_completed(
             [
-                # for a given hyperedge id ("<hyperedge>"+knowledge_fragment), 
-                # if it comes from multiple source chunks or if it is already in the graph, 
-                # sum all its weights and concat all source chunck ids 
+
+
                 _merge_hyperedges_then_upsert(k, v, knowledge_graph_inst, global_config)
                 for k, v in maybe_edges.items()
             ]
@@ -830,16 +796,14 @@ async def extract_entities(
         unit="entity",
     ):
         all_hyperedges_data.append(await result)
-            
+
     logger.info("Inserting entities into storage...")
     all_entities_data = []
     for result in tqdm_async(
         asyncio.as_completed(
             [
-                # for a given entity id (entity_name), 
-                # if it comes from multiple knowledge segments or if it is already in the graph, 
-                # only keep the most frequent entity_type,
-                # concat all descriptions, concat all source chunck ids 
+
+
                 _merge_nodes_then_upsert(k, v, knowledge_graph_inst, global_config)
                 for k, v in maybe_nodes.items()
             ]
@@ -855,9 +819,8 @@ async def extract_entities(
     for result in tqdm_async(
         asyncio.as_completed(
             [
-                # for a given entity id - hyperedge id pair, 
-                # if it comes from multiple knowledge segments or if it is already in the graph, 
-                # sum all weights, concat all source chunck ids 
+
+
                 _merge_edges_then_upsert(k, v, knowledge_graph_inst, global_config)
                 for k, v in maybe_nodes.items()
             ]
@@ -883,9 +846,9 @@ async def extract_entities(
 
     if hyperedge_vdb is not None:
         data_for_vdb = {
-            # id in vdb = md5 hash the hyperedge name then add a prefix 
+
             compute_mdhash_id(dp["hyperedge_name"], prefix="rel-"): {
-                "content": dp.get("embedding_content", dp["hyperedge_name"]), # embedding content
+                "content": dp.get("embedding_content", dp["hyperedge_name"]),
                 "hyperedge_name": dp["hyperedge_name"],
             }
             for dp in all_hyperedges_data
@@ -894,9 +857,9 @@ async def extract_entities(
 
     if entity_vdb is not None:
         data_for_vdb = {
-            # id in vdb = md5 hash the entity name then add a prefix 
+
             compute_mdhash_id(dp["entity_name"], prefix="ent-"): {
-                "content": dp["entity_name"] + dp["description"], # embedding content
+                "content": dp["entity_name"] + dp["description"],
                 "entity_name": dp["entity_name"],
             }
             for dp in all_entities_data
@@ -904,7 +867,6 @@ async def extract_entities(
         await entity_vdb.upsert(data_for_vdb)
 
     return knowledge_graph_inst
-
 
 
 def _strip_hyperedge_prefix(hyperedge_name: str) -> str:
@@ -1302,7 +1264,7 @@ def _project_matrix_for_hnsw_search(
             f"Reduced semantic search vectors with PCA from dim={matrix.shape[1]} to dim={target_dim}."
         )
         return _normalize_matrix_rows(reduced)
-    except Exception as exc:  # pragma: no cover - runtime fallback
+    except Exception as exc:
         logger.warning(f"PCA projection failed before HNSW build, using original vectors: {exc}")
         return matrix.astype(np.float32, copy=False)
 
@@ -1466,7 +1428,7 @@ def _build_semantic_candidate_map_hnsw(
                     continue
                 candidate_map[source_name].add(names[neighbor_idx])
         return candidate_map
-    except Exception as exc:  # pragma: no cover - runtime fallback
+    except Exception as exc:
         logger.warning(f"HNSW candidate build failed, fallback to exact cosine KNN: {exc}")
 
     similarity = search_matrix @ search_matrix.T
@@ -1587,7 +1549,7 @@ def _extract_clusters_from_sparse_graph(
                 sorted(community)
                 for community in raw_communities
             ]
-        except Exception as exc:  # pragma: no cover - defensive fallback
+        except Exception as exc:
             logger.warning(f"Greedy modularity communities failed, fallback to connected components: {exc}")
             communities = [
                 sorted(component)
@@ -2288,7 +2250,6 @@ async def build_higher_order_hyperedges(
     return knowledge_graph_inst
 
 
-
 async def _group_synonyms(
     representative: str,
     synonyms: set[str],
@@ -2299,7 +2260,7 @@ async def _group_synonyms(
     synonyms.add(representative)
     logger.debug(f"synonyms: {synonyms}")
     if len(synonyms) == 1:
-        # if there is only one synonym, just return the representative
+
         logger.debug("Skipping synonym group of one")
         return representative
 
@@ -2313,7 +2274,7 @@ async def _group_synonyms(
         role = "synonyms",
     ),
     )
-    
+
     for synonym in synonyms:
         await knowledge_graph_inst.upsert_edge(
         group_name,
@@ -2343,9 +2304,9 @@ async def merge_synonym_entities(
     if not components:
         logger.warning("No similar entities found in the knowledge graph.")
         return None
-    
+
     logger.info(f"Found {len(components)} synonym entity components to merge.")
-    
+
     merge_synonym_prompt = PROMPTS["merge_synonym"]
     context_base = dict(
         tuple_delimiter=PROMPTS["DEFAULT_TUPLE_DELIMITER"],
@@ -2356,7 +2317,7 @@ async def merge_synonym_entities(
     merge_synonym_prompt = merge_synonym_prompt.format(
         **context_base, input_text="{input_text}"
     )
-    
+
     async def _merge_single_synonym_component(component:set[str]):
         node_datas = await asyncio.gather(
             *[knowledge_graph_inst.get_node(entity) for entity in component]
@@ -2371,59 +2332,55 @@ async def merge_synonym_entities(
                 logger.warning(f"Entity {entity} has no description, skipping.")
                 continue
             entity_to_desc[entity] = entity_desc.split(GRAPH_FIELD_SEP)
-        
 
-        
+
         entity_to_group = {entity: {entity} for entity in entity_to_desc.keys()}
 
         attempt = 0
         while attempt < max_shuffle_attempts:
             merged = False
             current_entities = list(entity_to_group.keys())
-            
-            # logger.debug(f"current_entities: {current_entities}")
+
+
             random.shuffle(current_entities)
             new_entity_to_group = {}
             used = set()
             for i in range(0, len(current_entities), max_compare_batch_size):
                 batch_entity_names = current_entities[i:i+max_compare_batch_size]
-                # batch = {entity_name: entity_to_data[entity_name] for entity_name in batch_entity_names}
+
 
                 entity_input_text = ""
                 for entity_name in batch_entity_names:
                     entity_input_text += f"Entity name: {entity_name}, descriptions: {entity_to_desc[entity_name]}\n"
-                
+
                 hint_prompt = merge_synonym_prompt.format(input_text=entity_input_text)
 
-                # logger.debug(f"Merging synonym entities prompt: {hint_prompt}")
 
                 llm_output = await use_llm_func(hint_prompt)
-                # logger.debug(f"Merging synonym entities response: {llm_output}")
 
 
-                # seperate llm response into records (hyper-relation + entities)
                 groups = split_string_by_multi_markers(
                     llm_output,
                     [context_base["record_delimiter"], context_base["completion_delimiter"]],
                 )
-                # logger.debug(f"groups: {groups}")
+
                 for group in groups:
-                    # logger.debug(f"group: {group}")
+
                     group = re.search(r"\((.*)\)", group)
                     if group is None:
-                        # logger.debug(f"regex search failed for group: {group}")
+
                         continue
                     group = group.group(1)
                     group = split_string_by_multi_markers(
                         group, [context_base["tuple_delimiter"]]
                     )
-                    
+
                     synonyms = set(group)
-                    # intersect with batch_entity_names
+
                     synonyms = synonyms.intersection(set(batch_entity_names))
-                    # logger.debug(f"synonyms: {synonyms}")
+
                     if not synonyms:
-                        # logger.debug(f"No synonyms found in group: {group}")
+
                         continue
                     if len(synonyms) > 1:
                         merged = True
@@ -2435,24 +2392,23 @@ async def merge_synonym_entities(
                         if synonym in entity_to_group:
                             combined.update(entity_to_group[synonym])
                     new_entity_to_group[rep] = combined
-                    # logger.debug(f"add mapping: {rep}: {combined}")
+
                 for entity_name in batch_entity_names:
                     if entity_name not in used:
                         new_entity_to_group[entity_name] = entity_to_group[entity_name]
             entity_to_group = new_entity_to_group
-            # logger.debug(f"New entity to group mapping: {entity_to_group}")
+
             if merged:
-                attempt = 0  # restart attempts
+                attempt = 0
             else:
                 attempt += 1
             if len(current_entities) <= max_compare_batch_size:
                 attempt = max_shuffle_attempts
         return entity_to_group
-    
-    ################
-    # concurrency limit
+
+
     max_concurrency = global_config["max_concurrency"]
-    # max_concurrency = 4
+
 
     semaphore = asyncio.Semaphore(max_concurrency)
 
@@ -2469,9 +2425,8 @@ async def merge_synonym_entities(
         unit="component",
     ):
         results.append(await result)
-    #################
-    # logger.debug(f"Total Merging synonym entities results: {results}")
-    
+
+
     entity_to_group = defaultdict(set)
 
     for result in results:
@@ -2480,7 +2435,7 @@ async def merge_synonym_entities(
         for k, v in result.items():
             entity_to_group[k].update(v)
 
-            
+
     logger.info("Inserting synonym edges into storage...")
 
 
@@ -2488,12 +2443,8 @@ async def merge_synonym_entities(
     for result in tqdm_async(
         asyncio.as_completed(
             [
-                # for a given entity id (entity_name), 
-                # if it comes from multiple knowledge segments or if it is already in the graph, 
-                # only keep the most frequent entity_type,
-                # concat all descriptions, concat all source chunck ids 
-                # _merge_synonyms_then_upsert(k, v, knowledge_graph_inst, global_config)
-                # for k, v in entity_to_group.items()
+
+
                 _group_synonyms(k, v, knowledge_graph_inst, global_config)
                 for k, v in entity_to_group.items()
             ]
@@ -2509,12 +2460,12 @@ async def merge_synonym_entities(
 
 class Hypergraph:
     def __init__(
-            self, 
-            knowledge_graph_inst, 
-            entity_names_vdb, 
-            entities_vdb, 
+            self,
+            knowledge_graph_inst,
+            entity_names_vdb,
+            entities_vdb,
             hyperedges_vdb,
-            query_param: QueryParam, 
+            query_param: QueryParam,
             ):
         self.base = knowledge_graph_inst
         self.entity_names_vdb = entity_names_vdb
@@ -2536,8 +2487,6 @@ class Hypergraph:
             self.model = SentenceTransformer('all-MiniLM-L6-v2')
 
 
-
-    
     async def he_match(self, queries, he_top_k = 5, he_threshold = 0.6):
         linked_hes = []
         for i, query in enumerate(queries):
@@ -2554,7 +2503,7 @@ class Hypergraph:
             linked_hes.extend(he_names)
             logger.info(f"Query '{query}' is matched with: ")
             logger.info(', '.join(he_names))
-        
+
         return linked_hes
 
 
@@ -2565,12 +2514,12 @@ class Hypergraph:
             if not topics:
                 logger.warning(f"Can not link key entity '{key}' with knowledge hypergraph.")
                 continue
-            # keep name only
+
             topic_entity_names= [t["entity_name"] for t in topics if self.get_entity_id(t["entity_name"]) >= 0]
             topic_entities.extend(topic_entity_names)
             logger.info(f"Key entity '{key}' is linked to: ")
             logger.info(', '.join(topic_entity_names))
-        
+
         return topic_entities
 
     async def add_entity(self, entity):
@@ -2579,13 +2528,13 @@ class Hypergraph:
             synonyms = []
             if self.query_param.get_synonyms:
                 synonyms = await self.base.get_entity_synonyms(entity)
-            synonyms.insert(0, entity)  # Ensure the original entity is included at the beginning
-        
+            synonyms.insert(0, entity)
+
 
             entity_data_list = []
             ent_desc_emb_list = []
             ent_desc_list = []
-            
+
             for synonym in synonyms:
                 self.entity_to_id[synonym] = entity_id
                 synonym_data = await self.base.get_node(synonym)
@@ -2598,31 +2547,31 @@ class Hypergraph:
                     "entity_name": synonym,
                     "description": synonym_description
                 })
-   
-                id = compute_mdhash_id(synonym, prefix="ent-") 
+
+                id = compute_mdhash_id(synonym, prefix="ent-")
                 entity_desc_emb = await self.entities_vdb.get_vector_by_id(id)
                 if entity_desc_emb is None:
                     logger.warning(f"Entity description embedding not found for entity '{synonym}' with id '{id}'")
                     continue
                 ent_desc_emb_list.append(entity_desc_emb)
                 ent_desc_list.append(synonym + synonym_description)
-            
+
             if self.query_param.emb_model == "SBERT" and self.model is not None and ent_desc_list:
-                # Compute embedding for the entire description using SBERT
+
                 ent_desc_emb_list = self.model.encode(
                     ent_desc_list,
                     convert_to_tensor=True,
                     normalize_embeddings=True,
                 )
                 ent_desc_emb_list = [emb.cpu().numpy() for emb in ent_desc_emb_list]
-            
+
             self.entities.append(entity_data_list)
             self.ent_desc_embs.append(ent_desc_emb_list)
 
-            self.entity_to_hyperedges.append([])           
+            self.entity_to_hyperedges.append([])
 
         return self.entity_to_id[entity]
-    
+
     async def add_hyperedge(self, hyperedge):
         if hyperedge not in self.hyperedge_to_id:
             hyperedge_id = len(self.hyperedges)
@@ -2635,48 +2584,48 @@ class Hypergraph:
                 self.entity_to_hyperedges[entity_id].append(hyperedge_id)
                 self.hyperedge_to_entities[hyperedge_id].append(entity_id)
         return self.hyperedge_to_id[hyperedge]
-    
+
     def get_entity_id(self, entity):
-        """Get the ID of an entity, adding it if it doesn't exist."""
+
         if entity not in self.entity_to_id:
             return -1
         return self.entity_to_id[entity]
-    
+
     def get_hyperedge_id(self, hyperedge):
-        """Get the ID of a hyperedge, adding it if it doesn't exist."""
+
         if hyperedge not in self.hyperedge_to_id:
             return -1
         return self.hyperedge_to_id[hyperedge]
-    
+
     def get_hyperedge_entities_id(self, hyperedge_id :int) -> List[int]:
-        """Get the entity IDs of a hyperedge by its ID."""
+
         if hyperedge_id < 0 or hyperedge_id >= len(self.hyperedge_to_entities):
             return []
         return self.hyperedge_to_entities[hyperedge_id]
-    
+
     def get_entity_hyperedges_id(self, entity_id: int) -> List[int]:
-        """Get the hyperedge IDs of an entity by its ID."""
+
         if entity_id < 0 or entity_id >= len(self.entity_to_hyperedges):
             return []
         return self.entity_to_hyperedges[entity_id]
-    
+
     def get_entity_name(self, entity_id: int) -> Union[str, None]:
-        """Get the name of an entity by its ID."""
+
         if entity_id < 0 or entity_id >= len(self.entities):
             return None
         return self.entities[entity_id][0]["entity_name"]
-    
+
     def get_hyperedge_name(self, hyperedge_id: int) -> Union[str, None]:
-        """Get the name of a hyperedge by its ID."""
+
         if hyperedge_id < 0 or hyperedge_id >= len(self.hyperedges):
             return None
         return self.hyperedges[hyperedge_id]
-    
+
     def get_entity_description(self, entity_id: int) -> Union[str, None]:
-        """Get the description of an entity by its ID."""
+
         if entity_id < 0 or entity_id >= len(self.entities):
             return None
-        
+
 
         entity_data_list = self.entities[entity_id]
         entity = entity_data_list[0]["entity_name"]
@@ -2690,7 +2639,7 @@ class Hypergraph:
         description += f"){self.record_delimiter}"
         return description
 
-    
+
     def print_entities(self) -> str:
         result = []
 
@@ -2700,11 +2649,11 @@ class Hypergraph:
                 result.append(description)
 
         return "\n".join(result)
-    
+
 
     def print_hyperedges(self) -> str:
         return "\n".join(self.hyperedges)
-    
+
 
     def score_entity_relevance_by_id(self, query_emb, entity_id):
         if entity_id < 0 or entity_id >= len(self.ent_desc_embs):
@@ -2714,15 +2663,14 @@ class Hypergraph:
             return 0.0
         query_embedding = np.array(query_emb)
         ent_embs = [np.array(emb) for emb in ent_embs]
-        # Compute cosine similarity between query embedding and each entity description embeddings
+
         scores = [np.dot(query_embedding, ent_emb) / (np.linalg.norm(query_embedding) * np.linalg.norm(ent_emb)) for ent_emb in ent_embs]
         return float(max(scores))
-    
 
-    
+
 class ReasoningDAG:
     def __init__(self, orig_question, plan_llm_answer, global_topic_entity_names):
-        
+
         self.orig_question = orig_question
         self.global_topic_entity_names = global_topic_entity_names
 
@@ -2731,13 +2679,12 @@ class ReasoningDAG:
         if not raw_subquestions:
             raise ValueError(f"Failed to extract subquestions from LLM answer. {plan_llm_answer}")
 
-        
+
         subq_topic_set = set()
         for subq_oid, subq, topics_in_sq in raw_subquestions:
             subq_topic_set.update(topics_in_sq)
         if subq_topic_set != set(global_topic_entity_names):
             raise ValueError(f"Subquestion topics {subq_topic_set} do not match global topics {set(global_topic_entity_names)}.")
-        
 
 
         self.n = len(raw_subquestions)
@@ -2747,7 +2694,7 @@ class ReasoningDAG:
         self.subquestions = []
         self.subquestion_to_id = {}
         self.levels = node_levels
-        
+
 
         for subq_oid, subq, topics_in_sq in raw_subquestions:
             if subq_oid in node_order:
@@ -2766,12 +2713,12 @@ class ReasoningDAG:
         record_delimiter=PROMPTS["DEFAULT_RECORD_DELIMITER"]
         completion_delimiter=PROMPTS["DEFAULT_COMPLETION_DELIMITER"]
 
-        
+
         subquestions_section = llm_answer.split("<subquestions>")[1].split("</subquestions>")[0].strip()
         subquestions = parse_llm_result_into_lists(
-            content=subquestions_section, 
-            tuple_delimiter=tuple_delimiter, 
-            record_delimiter=record_delimiter, 
+            content=subquestions_section,
+            tuple_delimiter=tuple_delimiter,
+            record_delimiter=record_delimiter,
             completion_delimiter=completion_delimiter
         )
         logger.debug(f"Extracted subquestions: {subquestions}.")
@@ -2793,47 +2740,46 @@ class ReasoningDAG:
                 logger.warning("Subquestion id not in range.")
                 return [], []
             subq_data.append(subq_oid)
-            
-            
+
+
             subq = subq.strip()
             if not subq:
                 logger.warning("Invalid subquestion format.")
                 return [], []
             subq_data.append(subq)
-        
+
             topics_in_sq = []
 
             if topics_str.strip():
-                # find all substrings enclosed in quotes
+
                 matches = re.findall(r'"(.*?)"', topics_str.strip())
                 for m in matches:
                     real = m.strip().upper()
                     if real:
                         topics_in_sq.append(f'"{real}"')
 
-            # check if all topic_strs are in topic_entities
+
             for t in topics_in_sq:
-                if t not in global_topic_entity_names:              
+                if t not in global_topic_entity_names:
                     logger.warning(f"Subquestion topic entity '{t}' not in topic entities {global_topic_entity_names}.")
                     return [], []
             subq_data.append(topics_in_sq)
 
 
-
             subquestions[i] = subq_data
 
         dag_section = llm_answer.split("<dag>")[1].split("</dag>")[0].strip()
-        
+
         dag_edge_list = parse_llm_result_into_tuples(
-            content=dag_section, 
-            tuple_delimiter=tuple_delimiter, 
-            record_delimiter=record_delimiter, 
+            content=dag_section,
+            tuple_delimiter=tuple_delimiter,
+            record_delimiter=record_delimiter,
             completion_delimiter=completion_delimiter
         )
 
         logger.debug(f"Extracted DAG edges {dag_edge_list} from LLM answer.")
 
-        # check if dag_edge_list is valid
+
         for i, (u, v) in enumerate(dag_edge_list):
             u = int(u.strip())
             v = int(v.strip())
@@ -2842,60 +2788,46 @@ class ReasoningDAG:
                 return [], []
             dag_edge_list[i] = (u, v)
         return sorted(subquestions), dag_edge_list
-        
-    
-    # @staticmethod
-    # def topo_levels_from_edges(
-    #     edges: list[tuple[str,str]],
-    # ) -> tuple[list[list[str]], dict[str, int]]:
+
+
     def topo_levels_from_edges(
         self,
         nb_of_nodes: int,
         edges: list[tuple[str,str]],
     ) -> tuple[list[list[str]], dict[str, int]]:
-        """
-        Deterministic topological layering for a DAG.
-        Input:
-        edges: directed edges (u, v) meaning u -> v.
-        
-        Output:
-            levels: list of layers; nodes in the same inner list share the same level.
-            node_order:  node -> level index.
 
-        Raises:
-            ValueError if the graph has a cycle.
-        """
+
         nodes = list(range(nb_of_nodes))
 
         adj_list = defaultdict(list)
-        
+
         for u, v in edges:
             adj_list[u].append(v)
         for u in adj_list.keys():
             adj_list[u] = sorted(adj_list[u])
 
-        
+
         in_degr = {u: 0 for u in nodes}
         for u in adj_list.keys():
             for v in adj_list[u]:
                 in_degr[v] += 1
-        
+
         frontier = sorted([u for u, d in in_degr.items() if d == 0])
         levels = []
         node_order = {}
 
-        
+
         processed = 0
         level = 0
 
         while frontier:
-            # Emit current level in deterministic order
+
             levels.append(frontier[:])
             for u in frontier:
                 node_order[u] = level
             processed += len(frontier)
 
-            # Collect next frontier; accumulate and then sort once
+
             next_frontier = []
             for u in frontier:
                 for v in adj_list[u]:
@@ -2910,13 +2842,13 @@ class ReasoningDAG:
             raise ValueError("Graph has a cycle; topological levels undefined.")
 
         return levels, node_order
-    
-    
+
+
     def print_dag(self) -> str:
         dag_str = f"Orig Question: {self.orig_question}\n"
         dag_str += f"Global Topic Entities: {self.global_topic_entity_names}\n\n"
-        for i, level in enumerate(self.levels): 
-            level_str = f"Level {i}: " 
+        for i, level in enumerate(self.levels):
+            level_str = f"Level {i}: "
             if i <= self.completed_level:
                 level_str += f"(completed)\n"
             else:
@@ -2932,12 +2864,12 @@ class ReasoningDAG:
             dag_str += level_str + "\n"
         return dag_str
 
-    
+
     def copy(self):
         return copy.deepcopy(self)
-    
+
     def refine(self, llm_answer):
-        """Refine the current dag based on the llm answer, that is, add new subquestions and edges"""
+
 
         logger.debug(f"Refining DAG with LLM answer: {llm_answer}")
         new_raw_subquestions, new_dag_edge_list = self.extract_dag_from_llm_answer(llm_answer, self.global_topic_entity_names)
@@ -2948,7 +2880,7 @@ class ReasoningDAG:
         if not new_raw_subquestions and not new_dag_edge_list:
             logger.warning("Failed to refine DAG from LLM answer.")
             return
-        
+
         combined_subquestions = []
         combined_subquestion_to_id = {}
         for sq_oid in self.completed_sq_oids:
@@ -2961,7 +2893,6 @@ class ReasoningDAG:
         logger.debug(f"Current completed(combined) subquestions data: {combined_subquestions}")
         logger.debug(f"Current completed(combined) subquestion to id map: {combined_subquestion_to_id}")
 
-        
 
         cur_level_sqs = self.levels[self.completed_level]
 
@@ -2980,13 +2911,13 @@ class ReasoningDAG:
                     logger.warning("Invalid attempt to modify DAG with edge ({u},{v}).")
                     return
             combined_dag_edge_list.append((u, v))
-        
+
 
         total_nb_of_nodes = len(self.completed_sq_oids)
         for subq_oid, _, _ in new_raw_subquestions:
             if subq_oid not in self.completed_sq_oids:
                 total_nb_of_nodes += 1
-        
+
         combined_node_levels, combined_node_order = self.topo_levels_from_edges(total_nb_of_nodes, combined_dag_edge_list)
 
         logger.debug(f"Combined DAG levels (drafted)): {combined_node_levels}")
@@ -3009,7 +2940,7 @@ class ReasoningDAG:
         logger.debug(f"Combined(completed + new) subquestions data: {combined_subquestions}")
         logger.debug(f"Combined(completed + new) subquestion to id map: {combined_subquestion_to_id}")
         logger.debug(f"Combined(completed + new) DAG edges: {combined_dag_edge_list}")
-        
+
         self.n = len(combined_subquestions)
         self.dag_edges = combined_dag_edge_list
         self.subquestions = combined_subquestions
@@ -3020,15 +2951,15 @@ class DAGFrontier:
     def __init__(self, init_dags: list[ReasoningDAG], query_param: QueryParam):
         self.dags = []
         self.query_param = query_param
-        
+
         if self.query_param.search_tree_mode == "BFS":
             self.dags = deque(init_dags[:])
         else:
             self.dags = init_dags[:]
-        
+
     def push(self, dag: ReasoningDAG):
         self.dags.append(dag)
-    
+
     def pop(self) -> ReasoningDAG | None:
         if self.dags:
             if self.query_param.search_tree_mode == "BFS":
@@ -3036,24 +2967,23 @@ class DAGFrontier:
             else:
                 return self.dags.pop()
         return None
-    
+
     def extend(self, dags: list[ReasoningDAG]):
         self.dags.extend(dags)
-    
+
     def is_empty(self) -> bool:
         return len(self.dags) == 0
-    
-    def __len__(self): 
+
+    def __len__(self):
         return len(self.dags)
 
-    
- 
+
 class ReasoningDAGAgent:
-    def __init__(self, 
-                 upperbound_graph: Hypergraph, 
-                 dags: list[ReasoningDAG], 
-                 global_config: dict, 
-                 query_param: QueryParam, 
+    def __init__(self,
+                 upperbound_graph: Hypergraph,
+                 dags: list[ReasoningDAG],
+                 global_config: dict,
+                 query_param: QueryParam,
                  text_chunks_db: BaseKVStorage[TextChunkSchema],
     ):
         self.upperbound_graph = upperbound_graph
@@ -3070,44 +3000,36 @@ class ReasoningDAGAgent:
 
         self.max_nb_of_answers = query_param.max_nb_of_answers
         self.peak_tree_width = 0
-        self.peak_tree_depth = -1 # root level is 0
+        self.peak_tree_depth = -1
         self.total_visited_states = 0
         self.total_seen_states = 0
-        self.max_seen_dag_level = -1 # root level is 0
+        self.max_seen_dag_level = -1
 
-        self.token_usage = defaultdict(int) 
+        self.token_usage = defaultdict(int)
         self.graph_search_depth_stats = defaultdict(int)
-    
+
 
     async def reason(self):
-        """Perform reasoning based on the current DAG and Knowledge Hypergraph in a dfs style, i.e. each subquestion node may have multiple answers. the reasoning should process subquestions level by level. and the multiple answers are like branches. The branches will be processed in a dfs style"""
-        # given current dag from the stack, check the processing level
-        # process all subquestions in the current level
-        # for each subquestion, if it can not be answered abandon this branch
-        # if there is an answer to each subquestion, feed the answers with the current dag into the llm and asking for new dag
-        # that is, the missing part of some next level subquestions may be filled by the answers of the current level
-        # or the llm may generate new subquestions
-        # if there are multiple answers for one subquestion, the process will branch, that is, one new dag for each combination of answers 
-        # push the new dag(s) on to the stack
-        
+
+
         finished = []
 
         dag_frontier = DAGFrontier(init_dags=self.init_dags, query_param=self.query_param)
         self.peak_tree_width = max(self.peak_tree_width, len(dag_frontier))
         self.total_seen_states += len(dag_frontier)
         self.max_seen_dag_level = max(self.max_seen_dag_level, max([len(d.levels) for d in self.init_dags]) - 1)
-        
+
         while not dag_frontier.is_empty() and len(finished) < self.max_nb_of_answers:
             cur_dag = dag_frontier.pop()
             self.total_visited_states += 1
             logger.debug(f"Current reasoning DAG:\n{cur_dag.print_dag()}")
-            # process the current dag
+
             cur_level = cur_dag.completed_level + 1
 
-            
+
             if cur_level >= len(cur_dag.levels):
                 finished.append(cur_dag)
-                # return finished
+
                 continue
 
             self.peak_tree_depth = max(self.peak_tree_depth, cur_level)
@@ -3115,14 +3037,14 @@ class ReasoningDAGAgent:
             for sq_oid in cur_dag.levels[cur_level]:
                 sq_data = cur_dag.subquestions[sq_oid]
                 current_level_sqs.append(sq_data)
-            
+
             cur_level_answer_with_paths = {}
             abandon = False
 
             for subq_data in current_level_sqs:
 
                 step = ReasoningStep(
-                    upperbound_graph=self.upperbound_graph, 
+                    upperbound_graph=self.upperbound_graph,
                     subquestion_data=subq_data,
                     global_config=self.global_config,
                     query_param = self.query_param,
@@ -3130,19 +3052,19 @@ class ReasoningDAGAgent:
                     )
                 await step.async_init()
                 logger.debug(f"Answering subquestion {subq_data['id']}: {subq_data['subquestion']}")
-                # answers = step.generate_answers(self.use_model_func)
+
                 answer_path_pairs = await step.retrieve_path_and_answer(self.use_model_func)
                 self.update_token_usage(step.token_usage)
                 self.graph_search_depth_stats[step.depth] += 1
                 if answer_path_pairs:
                     cur_level_answer_with_paths[subq_data["id"]] = answer_path_pairs
                 else:
-                    # abandon this branch
+
                     abandon = True
                     break
             if abandon:
                 continue
-            # generate new dags based on the current dag and the answers
+
             new_dags = await self.generate_new_dags(cur_dag, cur_level_answer_with_paths)
             dag_frontier.extend(new_dags)
             self.peak_tree_width = max(self.peak_tree_width, len(dag_frontier))
@@ -3151,10 +3073,9 @@ class ReasoningDAGAgent:
             logger.debug(f"Pushed {len(new_dags)} new DAGs to the frontier. Current frontier size: {len(dag_frontier)}")
 
 
-
         for dag in finished:
             logger.debug(f"Finished reasoning DAG:\n{dag.print_dag()}")
-            
+
             print(dag.print_dag())
 
         tree_record = {
@@ -3170,10 +3091,10 @@ class ReasoningDAGAgent:
     def update_token_usage(self, token_usage: dict):
         for k, v in token_usage.items():
             self.token_usage[k] += v
-        
+
     def format_reasoning_plan_progress(self, dag: ReasoningDAG) -> str:
         result = []
-        for i, level in enumerate(dag.levels):  
+        for i, level in enumerate(dag.levels):
             level_str = f"Level {i}: "
             for node_id in level:
                 q, a = dag.subquestions[node_id]['subquestion'], dag.subquestions[node_id]['answer']
@@ -3184,10 +3105,10 @@ class ReasoningDAGAgent:
         return "\n".join(result)
 
     async def generate_new_dags(self, cur_dag: ReasoningDAG, cur_level_answer_with_paths: dict[int, list[tuple[str,list[int]]]]) -> list[ReasoningDAG]:
-        """Generate new dags based on the current dag and the answers of the current level"""
-        
+
+
         use_model_func = self.global_config["llm_model_func"]
-        
+
         dag_refinement_prompt_temp = PROMPTS["dag_refinement"]
 
         dag_refinement_prompt_base = dict(
@@ -3200,15 +3121,15 @@ class ReasoningDAGAgent:
         logger.debug(f"global_topic_entity_names: {cur_dag.global_topic_entity_names}")
 
         new_dags = []
-        # for each combination of answers, generate a new dag
+
         cur_sq_ids = list(cur_level_answer_with_paths.keys())
         cur_answer_with_paths = [cur_level_answer_with_paths[sq_id] for sq_id in cur_sq_ids]
         cur_answer_combinations = list(product(*cur_answer_with_paths))
         for answer_comb in cur_answer_combinations:
-            # create a new dag based on the current dag
+
             new_dag = cur_dag.copy()
             logger.debug(f"Processing answer combination: {answer_comb}")
-            
+
             for sq_oid, (answer, path) in zip(cur_sq_ids, answer_comb):
                 new_dag.subquestions[sq_oid]["answer"] = answer
                 new_dag.subquestions[sq_oid]["path"] = path
@@ -3222,12 +3143,12 @@ class ReasoningDAGAgent:
 
             reasoning_plan_progress = self.format_reasoning_plan_progress(new_dag)
             dag_refinement_prompt = dag_refinement_prompt_temp.format(
-                **dag_refinement_prompt_base, 
+                **dag_refinement_prompt_base,
                 input_question=cur_dag.orig_question,
                 topic_entities=', '.join(cur_dag.global_topic_entity_names),
                 progress=reasoning_plan_progress
             )
-            
+
             dag_refinement_llm_answer, token_usage =  await use_model_func(dag_refinement_prompt, count_token=True)
 
             self.token_usage["DAG_refine"] += token_usage["total_tokens"]
@@ -3246,15 +3167,14 @@ class ReasoningDAGAgent:
 
             new_dags.append(new_dag)
         return new_dags
-            
 
 
 class ReasoningStep:
     def __init__(
-            self, 
-            upperbound_graph: Hypergraph, 
+            self,
+            upperbound_graph: Hypergraph,
             subquestion_data: dict,
-            global_config: dict, 
+            global_config: dict,
             query_param: QueryParam,
             text_chunks_db: BaseKVStorage[TextChunkSchema],
         ):
@@ -3278,7 +3198,7 @@ class ReasoningStep:
         self.topic_ent_ids = []
         self.linked_hes = []
         self.linked_he_ids = set()
-        
+
         self.entity_scores: dict[int, float] = {}
         self.path_dict = dict()
         self.frontier = dict()
@@ -3289,14 +3209,14 @@ class ReasoningStep:
 
         self.token_usage = defaultdict(int)
         self.depth = 0
-    
+
     async def async_init(self):
         if self.query_param.emb_model == "OPENAI":
             self.subq_emb = await self.embedding_func(self.subquestion)
         else:
             subq_emb = self.upperbound_graph.model.encode(
-                [self.subquestion], 
-                convert_to_tensor=True, 
+                [self.subquestion],
+                convert_to_tensor=True,
                 normalize_embeddings=True
             )
             self.subq_emb = subq_emb.cpu().numpy()
@@ -3304,8 +3224,8 @@ class ReasoningStep:
         logger.debug(f"Re-extract subquestion topics for '{self.subquestion}'")
 
         self.topics= await self.topic_reinitialisation(
-            query=self.subquestion, 
-            # entity_names_vdb=self.upperbound_graph.entity_names_vdb,
+            query=self.subquestion,
+
             global_config=self.global_config
         )
 
@@ -3316,17 +3236,12 @@ class ReasoningStep:
             self.linked_he_ids = set(self.upperbound_graph.get_hyperedge_id(he) for he in self.linked_hes)
 
 
-    
-
     async def topic_reinitialisation(
             self,
-            query: str, 
+            query: str,
             global_config: dict,
         ) -> list[str]:
-        """
-        This function is used to extract topic entities and subquestions from the query.
-        It uses a language model to process the query and extract the relevant information.
-        """
+
 
         use_model_func = global_config["llm_model_func"]
 
@@ -3336,7 +3251,7 @@ class ReasoningStep:
             record_delimiter=PROMPTS["DEFAULT_RECORD_DELIMITER"],
             completion_delimiter=PROMPTS["DEFAULT_COMPLETION_DELIMITER"],
         )
-        
+
         topic_initialisation_prompt = topic_initialisation_prompt_temp.format(
             **topic_initialisation_prompt_base, input_question=query
         )
@@ -3357,9 +3272,9 @@ class ReasoningStep:
             try:
                 key_entities_section = topic_initialisation_result.split("<entities>")[1].split("</entities>")[0].strip()
                 key_entities = parse_llm_result_into_lists(
-                    content=key_entities_section, 
-                    tuple_delimiter=topic_initialisation_prompt_base["tuple_delimiter"], 
-                    record_delimiter=topic_initialisation_prompt_base["record_delimiter"], 
+                    content=key_entities_section,
+                    tuple_delimiter=topic_initialisation_prompt_base["tuple_delimiter"],
+                    record_delimiter=topic_initialisation_prompt_base["record_delimiter"],
                     completion_delimiter=topic_initialisation_prompt_base["completion_delimiter"]
                 )
                 key_entities = key_entities[0]
@@ -3383,11 +3298,11 @@ class ReasoningStep:
                 scores[ent_id] = self.entity_scores[ent_id]
             else:
                 missing.append(ent_id)
-        
+
         if self.query_param.score_mode != "LLM":
 
             further = []
-            
+
             for ent_id in missing:
                 score = self.upperbound_graph.score_entity_relevance_by_id(self.subq_emb, ent_id)
                 if self.query_param.score_mode == "EMB":
@@ -3399,11 +3314,11 @@ class ReasoningStep:
                     else:
                         scores[ent_id] = 0.0
                         self.entity_scores[ent_id] = 0.0
-           
+
             missing = further
         if not missing:
             return scores
-  
+
         entity_eva_prompt_temp = PROMPTS["entity_evaluation"]
 
         entity_eva_prompt_base = dict(
@@ -3411,7 +3326,7 @@ class ReasoningStep:
             record_delimiter=PROMPTS["DEFAULT_RECORD_DELIMITER"],
             completion_delimiter=PROMPTS["DEFAULT_COMPLETION_DELIMITER"],
         )
-        
+
         max_rounds = 3
         cur_round = 0
         max_batch_size = 20
@@ -3423,10 +3338,10 @@ class ReasoningStep:
                 batch = missing[i : i + max_batch_size]
 
                 entity_descriptions = [self.upperbound_graph.get_entity_description(ent_id) for ent_id in batch]
-               
+
                 entity_eva_prompt = entity_eva_prompt_temp.format(
-                    **entity_eva_prompt_base, 
-                    entity_descriptions="\n".join(entity_descriptions), 
+                    **entity_eva_prompt_base,
+                    entity_descriptions="\n".join(entity_descriptions),
                     question=self.subquestion
                 )
                 logger.debug(f"Scoring entities: {batch}")
@@ -3443,7 +3358,7 @@ class ReasoningStep:
 
                 logger.debug(f"Entity scores: {ent_id_scores}")
 
-                
+
                 scores.update(ent_id_scores)
                 self.entity_scores.update(ent_id_scores)
                 for ent_id in batch:
@@ -3458,22 +3373,22 @@ class ReasoningStep:
             logger.warning(f"Failed to get scores for entities {[self.upperbound_graph.get_entity_name(eid) for eid in missing]} after {max_rounds} rounds.")
         return scores
 
-  
+
     def parse_entity_scores(self, llm_answer: str) -> dict[int, float]:
         ent_scores = {}
 
         score_section = llm_answer.split("<entity_scores>")[1].split("</entity_scores>")[0].strip()
         tuples = parse_llm_result_into_tuples(
-            content=score_section, 
-            tuple_delimiter=self.tuple_delimiter, 
-            record_delimiter=self.record_delimiter, 
+            content=score_section,
+            tuple_delimiter=self.tuple_delimiter,
+            record_delimiter=self.record_delimiter,
             completion_delimiter=self.completion_delimiter
         )
         for ent, score in tuples:
             try:
                 score = int(score.strip()) / 10.0
-                # score = float(score.strip())
-                ent = ent.strip().upper()     
+
+                ent = ent.strip().upper()
                 ent_id = self.upperbound_graph.get_entity_id(ent)
                 if ent_id != -1:
                     ent_scores[ent_id] = score
@@ -3484,11 +3399,8 @@ class ReasoningStep:
 
 
     async def form_paths_from_path_dict(self, fall_back=False) -> list[list[int]]:
-        """
-        # if only one topic, use every path
-        # if multiple topics, use only the paths that connect topics in sequence
-        # fall back mode: if cannot connect topics, use unconnected partial paths
-        """
+
+
         async def _simple_score_path(path: list[int]) -> float:
             path_entity_ids = set()
             for he_id in path:
@@ -3497,7 +3409,7 @@ class ReasoningStep:
             path_entity_scores = await self.get_entity_scores(list(path_entity_ids))
             path_entity_scores = list(path_entity_scores.values())
             return sum(path_entity_scores)
-        
+
         async def _best_path_single_src(src_name: str) -> list[int]:
             if src_name not in self.path_dict:
                 return []
@@ -3511,7 +3423,7 @@ class ReasoningStep:
             path_score_pairs = sorted(path_score_pairs, key=lambda x: x[0], reverse=True)
             best_path = path_score_pairs[0][1]
             return best_path
-        
+
         def _merge_paths(a: list[int], b: list[int]) -> list[int]:
             if not a:
                 return b[::-1] if b else []
@@ -3522,7 +3434,7 @@ class ReasoningStep:
             if a[-1] == b_rev[0]:
                 return a + b_rev[1:]
             return a + b_rev
-            
+
         paths = []
         if len(self.topics) == 1:
             for src in self.topics:
@@ -3535,15 +3447,15 @@ class ReasoningStep:
                 src = self.topics[i]
                 dest = self.topics[i+1]
                 logger.debug(f"Forming paths from {src} to {dest}.")
-                
+
 
                 for mid_he_id in self.path_dict[src].keys():
                     if mid_he_id not in self.path_dict[dest].keys():
                         continue
                     src_path_list = self.path_dict[src][mid_he_id]
                     for src_path in src_path_list:
-                        # if len(src_path) < depth - 1:
-                        #     continue
+
+
                         dest_path_list = self.path_dict[dest][mid_he_id]
                         for dest_path in dest_path_list:
                             merged_path = _merge_paths(src_path, dest_path)
@@ -3551,13 +3463,13 @@ class ReasoningStep:
                 logger.debug(f"Found partial paths: {partial_paths}.")
 
                 if not partial_paths and fall_back:
-                    # use unconnected partial paths
+
                     src_best_path = await _best_path_single_src(src)
                     dest_best_path = await _best_path_single_src(dest)
                     partial_paths = [_merge_paths(src_best_path, dest_best_path)]
                     logger.debug(f"Fall back to unconnected partial paths: {partial_paths}.")
-                
-                # limit the number of partial paths to avoid combinatorial explosion
+
+
                 max_branch = 10
                 if len(partial_paths) > max_branch:
                     path_scores = await asyncio.gather(*[_simple_score_path(path) for path in partial_paths])
@@ -3565,24 +3477,24 @@ class ReasoningStep:
                     path_score_pairs = sorted(path_score_pairs, key=lambda x: x[0], reverse=True)
                     path_sorted = [p for s, p in path_score_pairs]
                     partial_paths = path_sorted[:max_branch]
-                
+
                 paths.append(partial_paths)
-            # combine the partial paths
+
             if paths:
                 combined_paths = list(product(*paths))
                 final_paths = []
                 for comb in combined_paths:
-                    # logger.debug(f"Combining partial paths: {comb}.")
+
                     final_path = []
                     for part in comb:
                         final_path.extend(part)
-                    # logger.debug(f"Combined path: {final_path}.")
+
                     final_paths.append(final_path)
 
                 paths = final_paths
             else:
                 paths = []
-        
+
         for linked_he in self.linked_hes:
             for he_id, path_list in self.path_dict[linked_he].items():
                 for path in path_list:
@@ -3590,7 +3502,7 @@ class ReasoningStep:
 
         path_infos = []
         for path in paths:
-    
+
             he_match = False
             path_entity_ids = set()
             for he_id in path:
@@ -3598,7 +3510,7 @@ class ReasoningStep:
                     he_match = True
                 he_entity_ids = self.upperbound_graph.get_hyperedge_entities_id(he_id)
                 path_entity_ids.update(he_entity_ids)
-            
+
             path_entity_scores = await self.get_entity_scores(list(path_entity_ids))
             path_entity_scores = list(path_entity_scores.values())
             path_score = sum(path_entity_scores)
@@ -3613,7 +3525,7 @@ class ReasoningStep:
             path_infos = sorted(path_infos, key=lambda x: (x[0], x[1]), reverse=True)
             path_infos = path_infos[:self.max_paths]
         return path_infos
-    
+
 
     def add_context_to_paths(self, paths: list[list[int]]) -> list[tuple[str, str]]:
         paths_with_context = []
@@ -3637,16 +3549,16 @@ class ReasoningStep:
             ent_str = "\n".join(entity_descriptions)
             paths_with_context.append((path, he_str, ent_str))
         return paths_with_context
-    
+
 
     async def retrieve_chunks_for_path(self, path: list[int]) -> str:
-        # retrieve text chunks for the hyperedges in the path
-        
+
+
         he_names = []
         for he_id in path:
             he_name = self.upperbound_graph.get_hyperedge_name(he_id)
             he_names.append(he_name)
-        
+
         hyperedge_datas = [await self.upperbound_graph.base.get_hyperedge(he_name) for he_name in he_names]
         text_unit_ids = []
         for hd in hyperedge_datas:
@@ -3654,16 +3566,16 @@ class ReasoningStep:
             for unit in units:
                 if unit not in text_unit_ids:
                     text_unit_ids.append(unit)
-        
+
         text_contexts = []
 
         for unit_id in text_unit_ids:
             chunk_data = await self.text_chunks_db.get_by_id(unit_id)
             if chunk_data is not None and "content" in chunk_data:
                 text_contexts.append(chunk_data["content"])
-        
+
         return '\n'.join(text_contexts)
-    
+
 
     async def llm_select_paths(self, paths_with_context: list[tuple[list[int], str, str]]) -> tuple[list[int], int]:
         path_selection_prompt_temp = PROMPTS["final_path_selection"]
@@ -3680,8 +3592,8 @@ class ReasoningStep:
             record = f"Path {i}: {he_str}"
             path_records.append(record)
         path_selection_prompt = path_selection_prompt_temp.format(
-            **path_selection_prompt_base, 
-            paths="\n".join(path_records), 
+            **path_selection_prompt_base,
+            paths="\n".join(path_records),
             question=self.subquestion
         )
 
@@ -3691,18 +3603,18 @@ class ReasoningStep:
 
 
         flag = llm_answer.split("<flag>")[1].split("</flag>")[0].strip().lower()
-        
+
         selected_ids = []
         if flag != "yes":
             return selected_ids
-        
+
         id_section = llm_answer.split("<id>")[1].split("</id>")[0].strip()
 
 
         ids = parse_llm_result_into_lists(
-            content=id_section, 
-            tuple_delimiter=path_selection_prompt_base["tuple_delimiter"], 
-            record_delimiter=path_selection_prompt_base["record_delimiter"], 
+            content=id_section,
+            tuple_delimiter=path_selection_prompt_base["tuple_delimiter"],
+            record_delimiter=path_selection_prompt_base["record_delimiter"],
             completion_delimiter=path_selection_prompt_base["completion_delimiter"]
             )
 
@@ -3710,9 +3622,9 @@ class ReasoningStep:
 
         if not ids:
             return selected_ids
-        
+
         ids = ids[0]
-        
+
         for id in ids:
             try:
                 id = int(id.strip())
@@ -3722,18 +3634,17 @@ class ReasoningStep:
                 continue
         return selected_ids
 
-    
 
     async def llm_select_directions(self, drafted_paths: list[tuple[float, float, int, str, list[int]]]) -> list[tuple[int, str, list[int]]]:
 
         dirs = []
         for _, _, he_id, src, new_path in drafted_paths:
             dirs.append((he_id, src, new_path))
-        
+
         if len(dirs) <= self.max_width:
             return dirs
-        
-        
+
+
         dirs_with_context = self.add_context_to_paths(dirs)
 
 
@@ -3742,7 +3653,7 @@ class ReasoningStep:
 
             record = f"Direction {i}: {he_str}"
             dir_records.append(record)
-        
+
         dir_selection_prompt_temp = PROMPTS["direction_selection"]
 
         dir_selection_prompt_base = dict(
@@ -3752,9 +3663,9 @@ class ReasoningStep:
         )
 
         dir_selection_prompt = dir_selection_prompt_temp.format(
-            **dir_selection_prompt_base, 
+            **dir_selection_prompt_base,
             width = self.max_width,
-            directions="\n".join(dir_records), 
+            directions="\n".join(dir_records),
             question=self.subquestion
         )
 
@@ -3764,22 +3675,22 @@ class ReasoningStep:
 
 
         selected_ids = []
-        
+
         id_section = llm_answer.split("<id>")[1].split("</id>")[0].strip()
 
 
         ids = parse_llm_result_into_lists(
-            content=id_section, 
-            tuple_delimiter=dir_selection_prompt_base["tuple_delimiter"], 
-            record_delimiter=dir_selection_prompt_base["record_delimiter"], 
+            content=id_section,
+            tuple_delimiter=dir_selection_prompt_base["tuple_delimiter"],
+            record_delimiter=dir_selection_prompt_base["record_delimiter"],
             completion_delimiter=dir_selection_prompt_base["completion_delimiter"]
             )
 
         logger.debug(f"Selected direction IDs: {ids}")
-        
+
         if not ids:
             return dirs[:self.max_width]
-        
+
         ids = ids[0]
 
         selected_dirs = []
@@ -3802,7 +3713,7 @@ class ReasoningStep:
 
 
     async def BFS_with_pruning(self):
-    
+
         new_frontier = dict()
 
         cur_entity_set = set()
@@ -3818,13 +3729,13 @@ class ReasoningStep:
 
             next_he_scores = defaultdict(list)
             for cur_ent_id in cur_entity_ids:
-               
+
                 cur_ent_hyperedges = self.upperbound_graph.get_entity_hyperedges_id(cur_ent_id)
                 for he in cur_ent_hyperedges:
                     if he != cur_he_id:
                         next_he_scores[he].append(cur_entities_scores[cur_ent_id])
-            
-            
+
+
             for he, he_scores in next_he_scores.items():
                 he_max_score = max(he_scores)
                 he_avg_score = sum(he_scores) / len(he_scores)
@@ -3843,7 +3754,7 @@ class ReasoningStep:
         elif self.query_param.dir_selection == "EOW":
             draft_next_hes_with_paths.sort(key=lambda x: (x[0], x[1]), reverse=True)
             draft_next_hes_with_paths = draft_next_hes_with_paths[:self.max_width]
-        else: # LLM
+        else:
             draft_next_hes_with_paths.sort(key=lambda x: (x[0], x[1]), reverse=True)
             draft_next_hes_with_paths = draft_next_hes_with_paths[:self.draft_width]
         selected_next_hes_with_paths = await self.llm_select_directions(draft_next_hes_with_paths)
@@ -3860,7 +3771,6 @@ class ReasoningStep:
         self.frontier = new_frontier
 
 
-
     async def generate_step_answer(self, he_str: str, ent_str: str) -> str:
         step_answer_prompt_temp = PROMPTS["step_answer_generation"]
 
@@ -3871,9 +3781,9 @@ class ReasoningStep:
         )
 
         step_answer_prompt = step_answer_prompt_temp.format(
-            **step_answer_prompt_base, 
-            path=he_str, 
-            entity_descriptions=ent_str, 
+            **step_answer_prompt_base,
+            path=he_str,
+            entity_descriptions=ent_str,
             question=self.subquestion
         )
 
@@ -3884,7 +3794,7 @@ class ReasoningStep:
         return answer
 
 
-    async def retrieve_path_and_answer(self, use_model_func) -> list[tuple[str, list[int]]]:      
+    async def retrieve_path_and_answer(self, use_model_func) -> list[tuple[str, list[int]]]:
         one_hop_ent_ids = set()
 
         for topic in self.topics:
@@ -3893,10 +3803,10 @@ class ReasoningStep:
             t_ent_hes = self.upperbound_graph.get_entity_hyperedges_id(t_ent_id)
             for he_id in t_ent_hes:
                 self.frontier[he_id] = [(topic, [he_id])]
-                self.path_dict[topic][he_id] = [[he_id]] # Initialize with 1 hop path
+                self.path_dict[topic][he_id] = [[he_id]]
                 he_ent_ids = self.upperbound_graph.get_hyperedge_entities_id(he_id)
                 one_hop_ent_ids.update(he_ent_ids)
-        
+
 
         for linked_he in self.linked_hes:
             self.path_dict[linked_he] = {}
@@ -3906,7 +3816,7 @@ class ReasoningStep:
             he_ent_ids = self.upperbound_graph.get_hyperedge_entities_id(linked_he_id)
             one_hop_ent_ids.update(he_ent_ids)
 
-        
+
         await self.get_entity_scores(list(one_hop_ent_ids))
 
         for depth in range(1, self.max_depth+1):
@@ -3932,13 +3842,12 @@ class ReasoningStep:
 
                     logger.debug(f"Answer path pairs: {answer_path_pairs}")
                     return answer_path_pairs
-        
-        
-        
+
+
         logger.debug(f"Reached max depth {self.max_depth} without finding a valid path, using the best available path if any.")
         answer_path_pairs = []
         paths = await self.form_paths_from_path_dict(fall_back=True)
-        paths_with_context = self.add_context_to_paths(paths[:1]) 
+        paths_with_context = self.add_context_to_paths(paths[:1])
         if paths_with_context:
             selected_path, he_str, ent_str = paths_with_context[0]
         else:
@@ -3946,20 +3855,16 @@ class ReasoningStep:
         answer = await self.generate_step_answer(he_str, ent_str)
         answer_path_pairs.append((answer, selected_path))
         return answer_path_pairs
-            
 
-   
+
 async def topic_initialisation(
-    query: str, 
+    query: str,
     entity_names_vdb: BaseVectorStorage,
     global_config: dict,
     topic_top_k: int = 1,
     topic_threshold: float = 0.6
     ) -> list[str]:
-    """
-    This function is used to extract topic entities and subquestions from the query.
-    It uses a language model to process the query and extract the relevant information.
-    """
+
 
     start = time.time()
     use_model_func = global_config["llm_model_func"]
@@ -3971,17 +3876,17 @@ async def topic_initialisation(
         completion_delimiter=PROMPTS["DEFAULT_COMPLETION_DELIMITER"],
 
     )
-    
+
     topic_initialisation_prompt = topic_initialisation_prompt_temp.format(
         **topic_initialisation_prompt_base, input_question=query
     )
 
     topic_entities: list[str] = []
-    
+
     max_time = 200
     token_usage_dict = defaultdict(int)
     while len(topic_entities) < 1 and (time.time() - start < max_time):
-  
+
 
         topic_initialisation_result, token_usage = await use_model_func(topic_initialisation_prompt, count_token=True)
 
@@ -3993,9 +3898,9 @@ async def topic_initialisation(
         try:
             key_entities_section = topic_initialisation_result.split("<entities>")[1].split("</entities>")[0].strip()
             key_entities = parse_llm_result_into_lists(
-                content=key_entities_section, 
-                tuple_delimiter=topic_initialisation_prompt_base["tuple_delimiter"], 
-                record_delimiter=topic_initialisation_prompt_base["record_delimiter"], 
+                content=key_entities_section,
+                tuple_delimiter=topic_initialisation_prompt_base["tuple_delimiter"],
+                record_delimiter=topic_initialisation_prompt_base["record_delimiter"],
                 completion_delimiter=topic_initialisation_prompt_base["completion_delimiter"]
             )
             key_entities = key_entities[0]
@@ -4010,7 +3915,7 @@ async def topic_initialisation(
             if not hits:
                 logger.warning(f"Can not link key entity '{key}' with knowledge hypergraph.")
                 continue
-        
+
             hit_names =  [t["entity_name"] for t in hits]
             topic_entities.extend(hit_names)
             logger.info(f"Key entity '{key}' is linked to: ")
@@ -4026,8 +3931,8 @@ async def topic_initialisation(
             topic_entities.extend(hit_names)
             logger.debug(f"Link '{query}' with entities: {', '.join(topic_entities)}")
     return topic_entities, token_usage_dict
-    
- 
+
+
 def _is_l0_hyperedge_data(hyperedge_data: Union[dict, None]) -> bool:
     if hyperedge_data is None:
         return False
@@ -4054,16 +3959,15 @@ async def _filter_l0_hyperedge_names(
 
 
 async def target_hyperedge_matching(
-    query: str, 
+    query: str,
     knowledge_graph_inst: BaseGraphStorage,
     hyperedges_vdb: BaseVectorStorage,
-    # global_config: dict,
+
     he_top_k: int = 5,
     he_threshold: float = 0.6
     ) -> list[str]:
-    """
-    This function is used to match query with hyperedges.
-    """
+
+
     hes = await hyperedges_vdb.query(query, top_k=he_top_k, better_than_threshold=he_threshold)
     if not query:
         logger.debug(f"Can not a match for '{query}' in knowledge hypergraph.")
@@ -4074,7 +3978,7 @@ async def target_hyperedge_matching(
     logger.info(f"Query '{query}' is matched with: ")
     logger.info(', '.join(he_names))
     return he_names
-        
+
 
 async def plan_context_graph_construction(
     knowledge_graph_inst: BaseGraphStorage,
@@ -4090,19 +3994,19 @@ async def plan_context_graph_construction(
 
     plan_context_graph = Hypergraph(
         query_param = query_param,
-        knowledge_graph_inst=knowledge_graph_inst, 
-        entity_names_vdb=entity_names_vdb, 
+        knowledge_graph_inst=knowledge_graph_inst,
+        entity_names_vdb=entity_names_vdb,
         entities_vdb=entities_vdb,
         hyperedges_vdb=hyperedges_vdb
         )
-    
+
     if query_param.emb_model == "OPENAI":
         embedding_func = global_config["embedding_func"]
         query_emb = await embedding_func(query)
     else:
         query_emb = plan_context_graph.model.encode(
-            [query], 
-            convert_to_tensor=True, 
+            [query],
+            convert_to_tensor=True,
             normalize_embeddings=True
             )
         query_emb = query_emb.cpu().numpy()
@@ -4123,7 +4027,7 @@ async def plan_context_graph_construction(
     for he in src_he_set:
         queue.append((he, 1))
     queue = deque(queue)
-   
+
 
     while queue:
         cur_he_name, cur_depth = queue.popleft()
@@ -4165,7 +4069,7 @@ async def plan_context_graph_construction(
 
         count = 0
         for next_he_name, _,_ in qualified_next_hes:
-            
+
             if plan_context_graph.get_hyperedge_id(next_he_name) > -1:
                 continue
 
@@ -4176,9 +4080,6 @@ async def plan_context_graph_construction(
                 break
 
     return plan_context_graph
-
-
-
 
 
 async def upperbound_graph_construction(
@@ -4192,8 +4093,8 @@ async def upperbound_graph_construction(
 ) -> Hypergraph:
 
     upperbound_graph = Hypergraph(
-        knowledge_graph_inst=knowledge_graph_inst, 
-        entity_names_vdb=entity_names_vdb, 
+        knowledge_graph_inst=knowledge_graph_inst,
+        entity_names_vdb=entity_names_vdb,
         entities_vdb=entities_vdb,
         hyperedges_vdb=hyperedges_vdb,
         query_param = query_param
@@ -4214,7 +4115,7 @@ async def upperbound_graph_construction(
     for he in src_he_set:
         queue.append((he, 1))
     queue = deque(queue)
-   
+
     while queue:
         cur_he_name, cur_depth = queue.popleft()
         if upperbound_graph.get_hyperedge_id(cur_he_name) > -1:
@@ -4256,8 +4157,8 @@ async def plan_initialisation(
 
     tuple_delimiter=PROMPTS["DEFAULT_TUPLE_DELIMITER"]
     record_delimiter=PROMPTS["DEFAULT_RECORD_DELIMITER"]
-    
-    
+
+
     token_usage_dict = defaultdict(int)
     init_dags = []
 
@@ -4267,7 +4168,7 @@ async def plan_initialisation(
         init_dags = [ReasoningDAG(orig_question=query, plan_llm_answer=orig_query_plan, global_topic_entity_names=topic_entity_names)]
         return init_dags, token_usage_dict
 
-    
+
     use_model_func = global_config["llm_model_func"]
     plan_initialisation_prompt_temp = PROMPTS["plan_initialisation"]
     plan_initialisation_prompt_base = dict(
@@ -4280,20 +4181,20 @@ async def plan_initialisation(
         plan_context = plan_context_graph.print_hyperedges()
 
     plan_initialisation_prompt = plan_initialisation_prompt_temp.format(
-        **plan_initialisation_prompt_base, 
+        **plan_initialisation_prompt_base,
         input_question=query,
         topic_entities=", ".join(topic_entity_names),
         plan_context=plan_context
     )
 
 
-    max_time = 200  
+    max_time = 200
 
     while len(init_dags) < query_param.nb_of_init_plans and (time.time() - start) < max_time:
 
         try:
             plan_initialisation_result, token_usage = await use_model_func(plan_initialisation_prompt, count_token=True)
-            
+
             token_usage_dict["plan_init"] = token_usage["total_tokens"]
 
             logger.info("Plan initialisation LLM result:")
@@ -4327,20 +4228,19 @@ class AnsweringAgent:
         self.answer_dicts = []
         self.token_usage = defaultdict(int)
 
-    
 
     async def extract_context_from_dags(self, dag: ReasoningDAG) -> str:
 
 
         context = []
-        for i, level in enumerate(dag.levels):  
+        for i, level in enumerate(dag.levels):
             for node_id in level:
                 subq_data = dag.subquestions[node_id]
                 path = dag.subquestions[node_id]['path']
                 he_names = [self.upperbound_graph.get_hyperedge_name(he_id) for he_id in path]
                 subq_data['reasoning_path'] = ' -> '.join(he_names)
 
-                
+
                 entity_descriptions = []
                 ent_ids = set()
                 for he_id in path:
@@ -4357,7 +4257,7 @@ class AnsweringAgent:
 
                         he_name = self.upperbound_graph.get_hyperedge_name(he_id)
                         he_names.append(he_name)
-                    
+
                     hyperedge_datas = [await self.upperbound_graph.base.get_hyperedge(he_name) for he_name in he_names]
 
                     text_unit_ids = []
@@ -4366,14 +4266,14 @@ class AnsweringAgent:
                         for unit in units:
                             if unit not in text_unit_ids:
                                 text_unit_ids.append(unit)
-                    
+
                     text_contexts = []
 
                     for unit_id in text_unit_ids:
                         chunk_data = await self.text_chunks_db.get_by_id(unit_id)
                         if chunk_data is not None and "content" in chunk_data:
                             text_contexts.append(chunk_data["content"])
-                    
+
                     subq_data['src_text_chunks'] = '\n'.join(text_contexts)
                 context.append(subq_data)
 
@@ -4392,12 +4292,12 @@ class AnsweringAgent:
 
             if self.query_param.with_src_chunks:
                 subq_str += f"Source Text Chunks: {subq_data['src_text_chunks']}\n"
-           
+
             subq_str += f"Entity Descriptions:\n{subq_data['entity_descriptions']}\n"
             context_strs.append(subq_str)
         full_context = "\n".join(context_strs)
         return full_context
-    
+
     async def get_answers(self) -> list[dict]:
 
         if self.query_param.subquestion_guided:
@@ -4410,7 +4310,7 @@ class AnsweringAgent:
             completion_delimiter=self.completion_delimiter,
         )
 
-        
+
         logger.debug(f"Starting to get answers for {len(self.dags)} DAGs, timestamp: {time.time()}")
         for dag in self.dags:
             context = await self.extract_context_from_dags(dag)
@@ -4429,7 +4329,6 @@ class AnsweringAgent:
             )
             logger.debug(f"Appended answer dict, timestamp: {time.time()}")
 
-    
 
     async def llm_select_final_answer(self) -> dict:
         answer_selection_prompt_temp = PROMPTS["final_answer_selection"]
@@ -4450,8 +4349,8 @@ class AnsweringAgent:
 
 
         answer_selection_prompt = answer_selection_prompt_temp.format(
-            **answer_selection_prompt_base, 
-            answers="\n".join(answer_records), 
+            **answer_selection_prompt_base,
+            answers="\n".join(answer_records),
             question=self.orig_question
         )
 
@@ -4459,12 +4358,12 @@ class AnsweringAgent:
         self.token_usage["final_answer_select"] += token_usage["total_tokens"]
         logger.debug(f"Final answer selection LLM response:\n{llm_answer}")
 
-   
+
         id_section = llm_answer.split("<id>")[1].split("</id>")[0].strip()
         id = parse_llm_result_into_lists(
-            content=id_section, 
-            tuple_delimiter=self.tuple_delimiter, 
-            record_delimiter=self.record_delimiter, 
+            content=id_section,
+            tuple_delimiter=self.tuple_delimiter,
+            record_delimiter=self.record_delimiter,
             completion_delimiter=self.completion_delimiter
             )
         id = id[0][0]
@@ -4472,9 +4371,8 @@ class AnsweringAgent:
 
         logger.debug(f"Select final answer: {answer_records[id]}")
 
-    
-        return self.answer_dicts[id]
 
+        return self.answer_dicts[id]
 
 
     async def get_best_answer(self) -> dict:
@@ -4489,10 +4387,6 @@ class AnsweringAgent:
             return self.answer_dicts[0]
         return best_answer_dict
 
-    
-
-
-
 
 async def kg_query_with_reasoning(
     query,
@@ -4505,11 +4399,11 @@ async def kg_query_with_reasoning(
     global_config: dict,
     hashing_kv: BaseKVStorage = None,
 ) -> str:
-    
+
     fail_answer_dict = {"gen_answer": "", "generation": PROMPTS["fail_response"], "dag": "", "retrieved": []}
 
     token_usage = defaultdict(int)
-        
+
     topic_entities, ti_token_usage = await topic_initialisation(query=query, entity_names_vdb=entity_names_vdb, global_config=global_config)
     token_usage.update(ti_token_usage)
     logger.debug(f"Topic entities: {topic_entities}")
@@ -4517,7 +4411,7 @@ async def kg_query_with_reasoning(
     if not topic_entities:
         logger.warning("No key entities found in the topic initialisation result.")
         return fail_answer_dict
-    
+
 
     target_hyperedges = []
     if query_param.with_target_hyperedges:
@@ -4543,8 +4437,6 @@ async def kg_query_with_reasoning(
     logger.debug("Plan context graph constructed.")
 
 
-
-
     init_dags, id_token_usage = await plan_initialisation(
         query=query,
         topic_entities=topic_entities,
@@ -4552,21 +4444,20 @@ async def kg_query_with_reasoning(
         global_config=global_config,
         query_param = query_param
     )
-        
+
     token_usage.update(id_token_usage)
 
 
     if not init_dags:
         logger.warning("Failed to generate a valid reasoning DAG.")
         return fail_answer_dict
-    
+
     logger.debug("Initial reasoning DAGs:")
     for i, init_dag in enumerate(init_dags):
-        logger.debug(f"Initial reasoning DAG {i}:") 
+        logger.debug(f"Initial reasoning DAG {i}:")
         logger.debug(init_dag.print_dag())
 
 
-    
     upperbound_graph = await upperbound_graph_construction(
         knowledge_graph_inst=knowledge_graph_inst,
         entity_names_vdb = entity_names_vdb,
@@ -4589,7 +4480,7 @@ async def kg_query_with_reasoning(
         return fail_answer_dict
     logger.info(f"Finished {len(finished_dags)} reasoning DAG(s).")
 
-    
+
     as_agent = AnsweringAgent(upperbound_graph=upperbound_graph, dags=finished_dags, global_config=global_config, query_param=query_param, text_chunks_db=text_chunks_db)
     final_answer_dict = await as_agent.get_best_answer()
 
@@ -4604,12 +4495,6 @@ async def kg_query_with_reasoning(
     final_answer_dict["graph_search_depth_stats"] = rs_agent.graph_search_depth_stats
 
 
-
     return final_answer_dict
 
 
-
-
-
-
-    

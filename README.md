@@ -1,7 +1,11 @@
 # HKHG
 
-HKHG provides graph construction, hierarchical retrieval, answer generation,
-and evaluation for question answering over domain documents.
+HKHG provides knowledge construction, knowledge retrieval, answer generation, and evaluation for domain-specific question answering.
+<p align="center">
+  <img src="assets/framework.png"
+       width="100%"
+       style="background-color: white;">
+</p>
 
 ## 1. Installation
 
@@ -19,13 +23,7 @@ Install a CUDA-enabled PyTorch build separately when GPU reranking is required.
 
 ## 2. Download the datasets
 
-Download
-the data archive separately and extract it into the repository root.
-
-```text
-Baidu Netdisk URL: <BAIDU_NETDISK_URL>
-Extraction code: <EXTRACTION_CODE>
-```
+The datasets are publicly available and can be downloaded from [Google Drive](https://drive.google.com/file/d/1c8foK0J0uoD94jC_Kf7mYsN5tuQx6laS/view?usp=sharing) and [Baidu Netdisk](https://pan.baidu.com/s/1xAvLoRHK4Dh2FPY4M8WEQw?pwd=9pwq) (Extraction code: `9pwq`).
 
 After extraction, the relevant layout must be:
 
@@ -209,3 +207,6 @@ above. To use another configuration file, pass its path as the only argument.
 See `examples/minimal_example/README.md` for runtime configuration, output
 paths, reranker setup, and evaluation scope.
 
+## Acknowledgements
+
+This project is built upon [PRoH](https://github.com/zaixjun/PRoH) and [HyperGraphRAG](https://github.com/LHRLAB/HyperGraphRAG). We sincerely thank the authors for making their code publicly available.

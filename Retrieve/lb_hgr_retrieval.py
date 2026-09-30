@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 
 from __future__ import annotations
 
@@ -105,7 +105,7 @@ def _call_with_retry(label: str, func, *args, attempts: int = 5, **kwargs):
     for attempt in range(1, attempts + 1):
         try:
             return func(*args, **kwargs)
-        except Exception as exc:  # pragma: no cover - runtime defensive
+        except Exception as exc:
             last_exc = exc
             message = str(exc).lower()
             retryable = any(token in message for token in ["429", "rate limit", "too many requests", "timeout", "connection"])
@@ -114,7 +114,7 @@ def _call_with_retry(label: str, func, *args, attempts: int = 5, **kwargs):
             sleep_seconds = min(4.0 * (2 ** (attempt - 1)), 60.0)
             print(f"    [retry] {label} attempt {attempt}/{attempts}; sleep {sleep_seconds:.1f}s", flush=True)
             time.sleep(sleep_seconds)
-    raise last_exc  # pragma: no cover - defensive
+    raise last_exc
 
 
 def _strip_hyperedge_prefix(hyperedge_id: str) -> str:
@@ -846,7 +846,7 @@ def multi_order_iterative_retrieval_constrained(
 
 
 def hierarchical_reasoning_path_retrieve(**kwargs) -> dict[str, Any]:
-    """Backward-compatible entrypoint for older scripts; now uses the new pure graph strategy."""
+
     mapping = {
         "top_n_seed": "top_k_anchor",
         "max_evidence": "top_k_final",

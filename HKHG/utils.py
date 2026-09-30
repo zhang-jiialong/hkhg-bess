@@ -52,9 +52,8 @@ def set_logger(log_file: str):
         logger.addHandler(file_handler)
 
 
-
 def locate_json_string_body_from_string(content: str) -> Union[str, None]:
-    """Locate the JSON string body from a string"""
+
     try:
         maybe_json_str = re.search(r"{.*}", content, re.DOTALL)
         if maybe_json_str is not None:
@@ -62,19 +61,11 @@ def locate_json_string_body_from_string(content: str) -> Union[str, None]:
             maybe_json_str = maybe_json_str.replace("\\n", "")
             maybe_json_str = maybe_json_str.replace("\n", "")
             maybe_json_str = maybe_json_str.replace("'", '"')
-            # json.loads(maybe_json_str) # don't check here, cannot validate schema after all
+
             return maybe_json_str
     except Exception:
         pass
-        # try:
-        #     content = (
-        #         content.replace(kw_prompt[:-1], "")
-        #         .replace("user", "")
-        #         .replace("model", "")
-        #         .strip()
-        #     )
-        #     maybe_json_str = "{" + content.split("{")[1].split("}")[0] + "}"
-        #     json.loads(maybe_json_str)
+
 
         return None
 
@@ -99,10 +90,10 @@ def compute_mdhash_id(content, prefix: str = ""):
 
 
 def limit_async_func_call(max_size: int, waitting_time: float = 0.0001):
-    """Add restriction of maximum async calling times for a async func"""
+
 
     def final_decro(func):
-        """Not using async.Semaphore to aovid use nest-asyncio"""
+
         __current_size = 0
 
         @wraps(func)
@@ -121,7 +112,7 @@ def limit_async_func_call(max_size: int, waitting_time: float = 0.0001):
 
 
 def wrap_embedding_func_with_attrs(**kwargs):
-    """Wrap a function with attributes"""
+
 
     def final_decro(func) -> EmbeddingFunc:
         new_func = EmbeddingFunc(**kwargs, func=func)
@@ -165,7 +156,7 @@ def pack_user_ass_to_openai_messages(*args: str):
     ]
 
 def split_string_by_multi_markers(content: str, markers: list[str]) -> list[str]:
-    """Split a string by multiple markers"""
+
     if not markers:
         return [content]
     results = re.split("|".join(re.escape(marker) for marker in markers), content)
@@ -174,7 +165,7 @@ def split_string_by_multi_markers(content: str, markers: list[str]) -> list[str]
 
 def parse_llm_result_into_tuples(content: str, tuple_delimiter: str, record_delimiter: str, completion_delimiter: str) -> list[list]:
     tuples = []
-    try: 
+    try:
         records = split_string_by_multi_markers(content, [record_delimiter, completion_delimiter])
         for record in records:
             record = re.search(r"\((.*)\)", record)
@@ -193,7 +184,7 @@ def parse_llm_result_into_tuples(content: str, tuple_delimiter: str, record_deli
 
 def parse_llm_result_into_lists(content: str, tuple_delimiter: str, record_delimiter: str, completion_delimiter: str) -> list[list]:
     lists = []
-    try: 
+    try:
         records = split_string_by_multi_markers(content, [record_delimiter, completion_delimiter])
         for record in records:
             record = re.search(r"\((.*)\)", record)
@@ -210,21 +201,14 @@ def parse_llm_result_into_lists(content: str, tuple_delimiter: str, record_delim
     return lists
 
 
-
-
-
-
-
-# Refer the utils functions of the official GraphRAG implementation:
-# https://github.com/microsoft/graphrag
 def clean_str(input: Any) -> str:
-    """Clean an input string by removing HTML escapes, control characters, and other unwanted characters."""
-    # If we get non-string input, just give it back
+
+
     if not isinstance(input, str):
         return input
 
     result = html.unescape(input.strip())
-    # https://stackoverflow.com/questions/4324790/removing-control-characters-from-a-string-in-python
+
     return re.sub(r"[\x00-\x1f\x7f-\x9f]", "", result)
 
 
@@ -233,7 +217,7 @@ def is_float_regex(value):
 
 
 def truncate_list_by_token_size(list_data: list, key: callable, max_token_size: int):
-    """Truncate a list of data by token size"""
+
     if max_token_size <= 0:
         return []
     tokens = 0
@@ -267,13 +251,13 @@ def xml_to_json(xml_file):
         tree = ET.parse(xml_file)
         root = tree.getroot()
 
-        # Print the root element's tag and attributes to confirm the file has been correctly loaded
+
         print(f"Root element: {root.tag}")
         print(f"Root attributes: {root.attrib}")
 
         data = {"nodes": [], "edges": []}
 
-        # Use namespace
+
         namespace = {"": "http://graphml.graphdrawing.org/xmlns"}
 
         for node in root.findall(".//node", namespace):
@@ -310,7 +294,7 @@ def xml_to_json(xml_file):
             }
             data["edges"].append(edge_data)
 
-        # Print the number of nodes and edges found
+
         print(f"Found {len(data['nodes'])} nodes and {len(data['edges'])} edges")
 
         return data
@@ -368,7 +352,7 @@ async def get_best_cached_response(
     llm_func=None,
     original_prompt=None,
 ) -> Union[str, None]:
-    # Get mode-specific cache
+
     mode_cache = await hashing_kv.get_by_id(mode)
     if not mode_cache:
         return None
@@ -378,12 +362,12 @@ async def get_best_cached_response(
     best_prompt = None
     best_cache_id = None
 
-    # Only iterate through cache entries for this mode
+
     for cache_id, cache_data in mode_cache.items():
         if cache_data["embedding"] is None:
             continue
 
-        # Convert cached embedding list to ndarray
+
         cached_quantized = np.frombuffer(
             bytes.fromhex(cache_data["embedding"]), dtype=np.uint8
         ).reshape(cache_data["embedding_shape"])
@@ -401,7 +385,7 @@ async def get_best_cached_response(
             best_cache_id = cache_id
 
     if best_similarity > similarity_threshold:
-        # If LLM check is enabled and all required parameters are provided
+
         if use_llm_check and llm_func and original_prompt and best_prompt:
             compare_prompt = PROMPTS["similarity_check"].format(
                 original_prompt=original_prompt, cached_prompt=best_prompt
@@ -412,7 +396,7 @@ async def get_best_cached_response(
                 llm_result = llm_result.strip()
                 llm_similarity = float(llm_result)
 
-                # Replace vector similarity with LLM similarity score
+
                 best_similarity = llm_similarity
                 if best_similarity < similarity_threshold:
                     log_data = {
@@ -428,9 +412,9 @@ async def get_best_cached_response(
                     }
                     logger.info(json.dumps(log_data, ensure_ascii=False))
                     return None
-            except Exception as e:  # Catch all possible exceptions
+            except Exception as e:
                 logger.warning(f"LLM similarity check failed: {e}")
-                return None  # Return None directly when LLM check fails
+                return None
 
         prompt_display = (
             best_prompt[:50] + "..." if len(best_prompt) > 50 else best_prompt
@@ -448,7 +432,7 @@ async def get_best_cached_response(
 
 
 def cosine_similarity(v1, v2):
-    """Calculate cosine similarity between two vectors"""
+
     dot_product = np.dot(v1, v2)
     norm1 = np.linalg.norm(v1)
     norm2 = np.linalg.norm(v2)
@@ -456,12 +440,12 @@ def cosine_similarity(v1, v2):
 
 
 def quantize_embedding(embedding: np.ndarray, bits=8) -> tuple:
-    """Quantize embedding to specified bits"""
-    # Calculate min/max values for reconstruction
+
+
     min_val = embedding.min()
     max_val = embedding.max()
 
-    # Quantize to 0-255 range
+
     scale = (2**bits - 1) / (max_val - min_val)
     quantized = np.round((embedding - min_val) * scale).astype(np.uint8)
 
@@ -471,24 +455,24 @@ def quantize_embedding(embedding: np.ndarray, bits=8) -> tuple:
 def dequantize_embedding(
     quantized: np.ndarray, min_val: float, max_val: float, bits=8
 ) -> np.ndarray:
-    """Restore quantized embedding"""
+
     scale = (max_val - min_val) / (2**bits - 1)
     return (quantized * scale + min_val).astype(np.float32)
 
 
 async def handle_cache(hashing_kv, args_hash, prompt, mode="default"):
-    """Generic cache handling function"""
+
     if hashing_kv is None:
         return None, None, None, None
 
-    # For naive mode, only use simple cache matching
+
     if mode == "naive":
         mode_cache = await hashing_kv.get_by_id(mode) or {}
         if args_hash in mode_cache:
             return mode_cache[args_hash]["return"], None, None, None
         return None, None, None, None
 
-    # Get embedding cache configuration
+
     embedding_cache_config = hashing_kv.global_config.get(
         "embedding_cache_config",
         {"enabled": False, "similarity_threshold": 0.95, "use_llm_check": False},
@@ -498,7 +482,7 @@ async def handle_cache(hashing_kv, args_hash, prompt, mode="default"):
 
     quantized = min_val = max_val = None
     if is_embedding_cache_enabled:
-        # Use embedding cache
+
         embedding_model_func = hashing_kv.global_config["embedding_func"]["func"]
         llm_model_func = hashing_kv.global_config.get("llm_model_func")
 
@@ -516,7 +500,7 @@ async def handle_cache(hashing_kv, args_hash, prompt, mode="default"):
         if best_cached_response is not None:
             return best_cached_response, None, None, None
     else:
-        # Use regular cache
+
         mode_cache = await hashing_kv.get_by_id(mode) or {}
         if args_hash in mode_cache:
             return mode_cache[args_hash]["return"], None, None, None
@@ -558,15 +542,15 @@ async def save_to_cache(hashing_kv, cache_data: CacheData):
 
 
 def safe_unicode_decode(content):
-    # Regular expression to find all Unicode escape sequences of the form \uXXXX
+
     unicode_escape_pattern = re.compile(r"\\u([0-9a-fA-F]{4})")
 
-    # Function to replace the Unicode escape with the actual character
+
     def replace_unicode_escape(match):
-        # Convert the matched hexadecimal value into the actual Unicode character
+
         return chr(int(match.group(1), 16))
 
-    # Perform the substitution
+
     decoded_content = unicode_escape_pattern.sub(
         replace_unicode_escape, content.decode("utf-8")
     )
@@ -574,29 +558,11 @@ def safe_unicode_decode(content):
     return decoded_content
 
 
-
 def array_to_buffer_string(array: np.ndarray) -> str:
     return base64.b64encode(array.astype(np.float32).tobytes()).decode()
-    # return base64.b64encode(array.tobytes()).decode()
 
 
 def buffer_string_to_array(base64_str: str, dtype=np.float32) -> np.ndarray:
     return np.frombuffer(base64.b64decode(base64_str), dtype=dtype)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
 
 

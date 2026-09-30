@@ -1,30 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
-"""
-独立实验脚本：
-1. layer_threshold_expand_l0_top20
-   - 对 L0-L4 做阈值匹配
-   - 每层展开到 L0
-   - 对每层展开后的 L0 重新排序，取 top 20
-   - 将每层的 L0 证据分层组织后送入问答 prompt
-
-2. direct_l0_top100
-   - 直接在 L0 层排序取 top 100
-   - 将这些 L0 证据送入同一风格的问答 prompt
-
-3. layer_disjoint_l0_top20
-   - 对 L0-L4 做阈值匹配
-   - 每层展开到 L0
-   - 按 L0 -> L1 -> ... -> Lmax 顺序去重
-   - 每层最多取 20，不足则取剩余全部
-   - 将各层互不重叠的 L0 证据分层组织后送入问答 prompt
-
-说明：
-- 不改原始项目源码
-- 不走 DAG/BFS 原推理链
-- 仅复用其最后一层问答 prompt 风格
-"""
 
 from __future__ import annotations
 

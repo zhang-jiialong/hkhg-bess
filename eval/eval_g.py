@@ -18,7 +18,7 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential,
     retry_if_exception_type,
-    # wait longer for ratelimit errors
+
     RetryCallState,
 )
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,8 +55,6 @@ def gpt_4o_mini(prompt):
         temperature=1.0
     )
     return response.choices[0].message.content
-
-
 
 
 def cal_gen(question, answers, generation, f1_score):
@@ -182,7 +180,7 @@ Explain why you gave this score.
             prompt = build_prompt(metric)
 
             content = gpt_4o_mini(prompt)
-            
+
             score_str = content.split("<score>")[1].split("</score>")[0].strip()
             explanation = content.split("<explanation>")[1].split("</explanation>")[0].strip()
             score = int(score_str)
@@ -192,7 +190,7 @@ Explain why you gave this score.
 
         score = score / 10
         score = (score + f1_score) / 2
-        # 2 * score * f1_score / (score + f1_score) if (score + f1_score) > 0.0 else 0.0
+
 
         return metric, {"score": score, "explanation": explanation}
 
@@ -201,7 +199,7 @@ Explain why you gave this score.
         "relevance", "diversity", "logical_coherence", "factuality"
     ]
 
-    # 使用 functools.partial 绑定 f1_score
+
     score_fn = partial(score_extraction, f1_score=f1_score)
 
     with ThreadPoolExecutor(max_workers=max(1, int(os.getenv("GEN_EVAL_MAX_WORKERS", "1")))) as executor:
@@ -214,14 +212,9 @@ Explain why you gave this score.
     return {"score": overall_score, "explanation": exp}
 
 
-
 def cal_gen_llm_only(question, answers, generation):
-    """LLM-judge-only generation score for long-form QA.
 
-    This preserves the existing cal_gen implementation and removes the effect of
-    lexical F1 by running it with f1_score=0.0, then rescaling each dimension
-    back to the original 0-1 judge score.
-    """
+
     result = cal_gen(question, answers, generation, 0.0)
     exp = result.get("explanation", {})
     metric_scores = []

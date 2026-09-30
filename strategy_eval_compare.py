@@ -1,31 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
-"""
-独立实验脚本：
-1. original_proh
-   - 直接调用原始 HKHG 问答链路
-2. layer_threshold_expand_l0_top20
-   - 各层先阈值匹配
-   - 展开到 L0
-   - 每层取 top 20
-   - 按复用的最终问答 prompt 风格回答
-3. direct_l0_top100
-   - 直接在 L0 取 top 100
-   - 按同样的问答 prompt 风格回答
-
-并自动对每个策略进行评分：
-- EM
-- F1
-- R-Sim
-- Gen
-
-说明：
-- 不修改项目主流程源码
-- 支持随机抽取若干问题
-- 支持跳过 R-Sim / Gen 以加快实验速度
-- 结果会边跑边写入 JSON，避免中途中断丢失
-"""
 
 from __future__ import annotations
 
@@ -235,7 +209,7 @@ def call_with_retry(
     for attempt in range(1, attempts + 1):
         try:
             return func(*args, **kwargs)
-        except Exception as exc:  # pragma: no cover - runtime defensive
+        except Exception as exc:
             last_exc = exc
             if not is_retryable_exception(exc) or attempt >= attempts:
                 raise
@@ -245,7 +219,7 @@ def call_with_retry(
                 flush=True,
             )
             time.sleep(sleep_seconds)
-    raise last_exc  # pragma: no cover - defensive
+    raise last_exc
 
 
 def embed_texts_with_retry(client, model: str, texts: list[str]) -> Any:
@@ -263,7 +237,7 @@ def maybe_cal_rsim(context_text: str, knowledge: str, skip_rsim: bool) -> tuple[
         from eval.eval_r import cal_rsim
 
         return float(cal_rsim([context_text], [knowledge])) if knowledge else 0.0, None
-    except Exception as exc:  # pragma: no cover - defensive
+    except Exception as exc:
         return None, repr(exc)
 
 
@@ -288,7 +262,7 @@ def maybe_cal_gen(
             f1_score,
         )
         return float(result["score"]), None
-    except Exception as exc:  # pragma: no cover - defensive
+    except Exception as exc:
         return None, repr(exc)
 
 
@@ -793,7 +767,7 @@ async def process_question_async(
             "error": None,
             "error_details": None,
         }
-    except Exception as exc:  # pragma: no cover - runtime defensive
+    except Exception as exc:
         error_details = build_error_details(exc)
         print(f"    original_proh failed: {error_details}", flush=True)
         question_result["strategies"]["original_proh"] = build_failed_strategy_result(
@@ -823,7 +797,7 @@ async def process_question_async(
             skip_rsim=args.skip_rsim,
             skip_gen=args.skip_gen,
         )
-    except Exception as exc:  # pragma: no cover - runtime defensive
+    except Exception as exc:
         error_details = build_error_details(exc)
         print(f"    layer_threshold_expand_l0_top20 failed: {error_details}", flush=True)
         question_result["strategies"]["layer_threshold_expand_l0_top20"] = build_failed_strategy_result(
@@ -853,7 +827,7 @@ async def process_question_async(
             skip_rsim=args.skip_rsim,
             skip_gen=args.skip_gen,
         )
-    except Exception as exc:  # pragma: no cover - runtime defensive
+    except Exception as exc:
         error_details = build_error_details(exc)
         print(f"    layer_disjoint_l0_top20 failed: {error_details}", flush=True)
         question_result["strategies"]["layer_disjoint_l0_top20"] = build_failed_strategy_result(
@@ -881,7 +855,7 @@ async def process_question_async(
             skip_rsim=args.skip_rsim,
             skip_gen=args.skip_gen,
         )
-    except Exception as exc:  # pragma: no cover - runtime defensive
+    except Exception as exc:
         error_details = build_error_details(exc)
         print(f"    direct_l0_top100 failed: {error_details}", flush=True)
         question_result["strategies"]["direct_l0_top100"] = build_failed_strategy_result(
@@ -913,7 +887,7 @@ async def process_question_async(
             skip_rsim=args.skip_rsim,
             skip_gen=args.skip_gen,
         )
-    except Exception as exc:  # pragma: no cover - runtime defensive
+    except Exception as exc:
         error_details = build_error_details(exc)
         print(f"    HHIterative-Retrieval failed: {error_details}", flush=True)
         question_result["strategies"]["HHIterative-Retrieval"] = build_failed_strategy_result(

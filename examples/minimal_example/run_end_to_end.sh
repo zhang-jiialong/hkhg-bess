@@ -61,7 +61,6 @@ fi
 
 export HKHG_RUNTIME_CONFIG="$RUNTIME_CONFIG"
 
-# A complete local reranker snapshot should be used without online metadata checks.
 if [[ -z "${HF_HUB_OFFLINE:-}" ]]; then
   if [[ -n "${HF_HUB_CACHE:-}" ]]; then
     HF_CACHE_ROOT="$HF_HUB_CACHE"

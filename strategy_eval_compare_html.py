@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
-"""
-将 strategy_eval_compare.py 的结果渲染成独立 HTML。
-"""
 
 from __future__ import annotations
 

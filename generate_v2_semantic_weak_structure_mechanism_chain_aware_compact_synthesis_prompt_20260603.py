@@ -350,7 +350,7 @@ def score_sentence(sentence: str, query_terms: Counter, evidence_terms: Counter)
     score = 0.0
     for t, c in sw.items():
         score += min(c, 2) * (3.0 * query_terms.get(t, 0) + 1.0 * evidence_terms.get(t, 0))
-    # mild preference for information-dense but not huge sentences
+
     score = score / math.sqrt(max(len(sw), 1))
     if re.search(r'\d|%|V|A|SOC|DOD|OCV|CAN|RS232|CCCV', sentence):
         score += 1.5

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 
 from __future__ import annotations
 
@@ -233,7 +233,7 @@ def main() -> None:
                 "error": None,
                 "error_details": None,
             }
-        except Exception as exc:  # pragma: no cover - runtime defensive
+        except Exception as exc:
             row = {
                 "question_index": item["question_index"],
                 "question": question,

@@ -68,22 +68,7 @@ class JsonKVStorage(BaseKVStorage):
 
 
 def count_node_roles(graph: nx.Graph) -> dict[str, int]:
-    """
-    Counts the number of nodes with role 'entity' and 'hyperedge' in a NetworkX graph.
-    Assumes all nodes have the 'role' attribute set to either 'entity' or 'hyperedge'.
-    
-    Parameters:
-        graph: nx.Graph
-            The NetworkX graph object.
-    
-    Returns:
-        dict[str, int]: Dictionary with counts.
-            Example:
-            {
-                "entity": 1500000,
-                "hyperedge": 400000
-            }
-    """
+
 
     role_counter = {"entity": 0, "hyperedge": 0, "synonyms":0}
     for node, data in graph.nodes(data=True):
@@ -92,15 +77,12 @@ def count_node_roles(graph: nx.Graph) -> dict[str, int]:
             raise ValueError(f"{node} data must contain 'role' attribute.")
         role = data["role"]
         role_counter[role] += 1
-    
+
     return {
         "entity": role_counter["entity"],
         "hyperedge": role_counter["hyperedge"],
-        "synonyms": role_counter["synonyms"] 
+        "synonyms": role_counter["synonyms"]
     }
-
-
-
 
 
 @dataclass
@@ -155,29 +137,29 @@ class NanoVectorDBStorage(BaseVectorStorage):
             results = self._client.upsert(datas=list_data)
             return results
         else:
-            # sometimes the embedding is not returned correctly. just log it.
+
             logger.error(
                 f"embedding is not 1-1 with data, {len(embeddings)} != {len(list_data)}"
             )
-    
+
     async def get_vector_by_name(self, id: str):
         record = self._client.get([id])
         if record and "__vector__" in record[0]:
             return record[0]["__vector__"]
         logger.debug(f"id={id} not found in db.")
         return None
-    
+
 
     async def get_vector_by_id(self, id: str):
-        
-        for i, data in enumerate(self.client_storage["data"]):           
+
+        for i, data in enumerate(self.client_storage["data"]):
             if data["__id__"] == id:
                 vector = self.client_storage["matrix"][i]
-                # logger.debug(f"Vector for id={id} found in db.")
+
                 return vector
         logger.debug(f"id={id} not found in db.")
         return None
-    
+
     async def query(self, query: str, top_k=5, better_than_threshold=None):
         if better_than_threshold is None:
             better_than_threshold=self.cosine_better_than_threshold
@@ -192,7 +174,7 @@ class NanoVectorDBStorage(BaseVectorStorage):
             {**dp, "id": dp["__id__"], "distance": dp["__metrics__"]} for dp in results
         ]
         return results
-    
+
     async def get_knn_by_id(self, id: str, top_k: int = 5, better_than_threshold=None):
         record = self._client.get([id])
         if not record or "__vector__" not in record[0]:
@@ -203,7 +185,7 @@ class NanoVectorDBStorage(BaseVectorStorage):
             top_k=top_k,
             better_than_threshold=better_than_threshold,
         )
-    
+
     async def get_knn_by_vector(self, vector: np.ndarray, top_k: int = 5, better_than_threshold=None):
         if better_than_threshold is None:
             better_than_threshold = self.cosine_better_than_threshold
@@ -222,8 +204,8 @@ class NanoVectorDBStorage(BaseVectorStorage):
             embedding = embedding[0]
         if better_than_threshold is None:
             better_than_threshold = self.cosine_better_than_threshold
-        # else:
-        #     better_than_threshold = float(better_than_threshold)
+
+
         results = self._client.query(
             query=embedding,
             top_k=top_k,
@@ -233,7 +215,7 @@ class NanoVectorDBStorage(BaseVectorStorage):
             {**dp, "id": dp["__id__"], "distance": dp["__metrics__"]} for dp in results
         ]
         return results
-    
+
 
     @property
     def client_storage(self):
@@ -271,12 +253,10 @@ class NanoVectorDBStorage(BaseVectorStorage):
             logger.error(
                 f"Error while deleting relations for entity {entity_name}: {e}"
             )
-    
+
     async def sample_random_entry(self):
-        """
-        Sample a random entry from the vector database.
-        Returns a dictionary with the sampled entry's id and content.
-        """
+
+
         if not self.client_storage["data"]:
             return None
         idx = np.random.randint(0, len(self.client_storage["data"]))
@@ -304,24 +284,22 @@ class NetworkXStorage(BaseGraphStorage):
 
     @staticmethod
     def stable_largest_connected_component(graph: nx.Graph) -> nx.Graph:
-        """Refer to https://github.com/microsoft/graphrag/index/graph/utils/stable_lcc.py
-        Return the largest connected component of the graph, with nodes and edges sorted in a stable way.
-        """
+
+
         from graspologic.utils import largest_connected_component
 
         graph = graph.copy()
         graph = cast(nx.Graph, largest_connected_component(graph))
         node_mapping = {
             node: html.unescape(node.upper().strip()) for node in graph.nodes()
-        }  # type: ignore
+        }
         graph = nx.relabel_nodes(graph, node_mapping)
         return NetworkXStorage._stabilize_graph(graph)
 
     @staticmethod
     def _stabilize_graph(graph: nx.Graph) -> nx.Graph:
-        """Refer to https://github.com/microsoft/graphrag/index/graph/utils/stable_lcc.py
-        Ensure an undirected graph with the same relationships will always be read the same way.
-        """
+
+
         fixed_graph = nx.DiGraph() if graph.is_directed() else nx.Graph()
 
         sorted_nodes = graph.nodes(data=True)
@@ -378,7 +356,7 @@ class NetworkXStorage(BaseGraphStorage):
 
     async def get_node(self, node_id: str) -> Union[dict, None]:
         return self._graph.nodes.get(node_id)
-    
+
     async def get_hyperedge(self, node_id: str) -> Union[dict, None]:
         data = self._graph.nodes.get(node_id)
         if data and data.get("role") == "hyperedge":
@@ -410,10 +388,10 @@ class NetworkXStorage(BaseGraphStorage):
 
                 return edges
             else:
-                # Return all edges for the node
+
                 return list(self._graph.edges(source_node_id, data=data))
         return None
-    
+
     async def get_node_nbrs(self, source_node_id: str, data=False, role: str = "link"):
         if self._graph.has_node(source_node_id):
             if role in self.edge_roles:
@@ -426,16 +404,14 @@ class NetworkXStorage(BaseGraphStorage):
                             nbrs.append(target)
                 return nbrs
             else:
-                # Return all nbrs for the node
+
                 return [[t[1:] for t in self._graph.edges(source_node_id, data=data)]]
         return None
 
 
-
-    
     async def get_entity_synonyms(self, source_node_id: str):
         if self._graph.has_node(source_node_id) and self._graph.nodes.get(source_node_id).get("role") == "entity":
-            
+
             group_edges = await self.get_node_nbrs(source_node_id, role="synonym")
             if not group_edges:
                 return []
@@ -446,11 +422,10 @@ class NetworkXStorage(BaseGraphStorage):
             return synonyms
 
         return None
-    
+
     async def get_entity_hyperedges(self, source_node_id: str,  data=False, get_synonyms: bool = True):
-        # print(self._graph.has_node(source_node_id))
-        # print(self._graph.nodes.get(source_node_id).get("role") == "entity")
-        
+
+
         if self._graph.has_node(source_node_id) and self._graph.nodes.get(source_node_id).get("role") == "entity":
             seen_hyperedges = set()
             hyperedges = []
@@ -461,7 +436,7 @@ class NetworkXStorage(BaseGraphStorage):
                     nodes.extend(synonyms)
             for node in nodes:
                 for hyperedge in (await self.get_node_nbrs(node, data=data, role="link")):
-                    # Ensure we only add unique hyperedges
+
                     if isinstance(hyperedge, tuple):
                         hyperedge_id = hyperedge[0]
                     else:
@@ -471,19 +446,19 @@ class NetworkXStorage(BaseGraphStorage):
                         hyperedges.append(hyperedge)
             return hyperedges
         return None
-    
+
 
     async def get_entity_similars(self, source_node_id: str):
         if self._graph.has_node(source_node_id) and self._graph.nodes.get(source_node_id).get("role") == "entity":
             similars = [entity for _, entity, _ in (await self.get_node_edges(source_node_id, data=True, role="similar"))]
             return similars
         return None
-    
+
     async def get_hyperedge_entities(self, source_node_id: str, data: bool = False, get_synonyms: bool = True):
         if self._graph.has_node(source_node_id) and self._graph.nodes.get(source_node_id).get("role") == "hyperedge":
             entities = await self.get_node_nbrs(source_node_id, data=data, role="link")
             if not get_synonyms:
-                return entities 
+                return entities
             all_entities = set()
             for entity in entities:
                 synonyms = await self.get_entity_synonyms(entity)
@@ -492,11 +467,10 @@ class NetworkXStorage(BaseGraphStorage):
                 all_entities.add(entity)
             return list(all_entities)
         return None
-    
+
     async def get_entity_degree(self, source_node_id: str, mode: str = "hyperedge") -> int:
-        """
-        Returns hyperedge_count/ synonym_count/ similar_count for the given entity node.
-        """
+
+
         if self._graph.has_node(source_node_id) and self._graph.nodes.get(source_node_id).get("role") == "entity":
             if mode == "hyperedge":
                 edges = await self.get_entity_hyperedges(source_node_id, get_synonyms=False)
@@ -511,16 +485,14 @@ class NetworkXStorage(BaseGraphStorage):
             if edges:
                 return len(edges)
         return 0
-    
+
     async def get_hyperedge_degree(self, source_node_id: str) -> int:
-        """
-        Returns the number of entities linked to the given hyperedge node.
-        """
+
+
         if self._graph.has_node(source_node_id) and self._graph.nodes.get(source_node_id).get("role") == "hyperedge":
             return self._graph.degree(source_node_id)
-           
-        return 0
 
+        return 0
 
 
     async def upsert_node(self, node_id: str, node_data: dict[str, str]):
@@ -532,11 +504,8 @@ class NetworkXStorage(BaseGraphStorage):
         self._graph.add_edge(source_node_id, target_node_id, **edge_data)
 
     async def delete_node(self, node_id: str):
-        """
-        Delete a node from the graph based on the specified node_id.
 
-        :param node_id: The node_id to delete
-        """
+
         if self._graph.has_node(node_id):
             self._graph.remove_node(node_id)
             logger.info(f"Node {node_id} deleted from the graph.")
@@ -548,7 +517,7 @@ class NetworkXStorage(BaseGraphStorage):
             raise ValueError(f"Node embedding algorithm {algorithm} not supported")
         return await self._node_embed_algorithms[algorithm]()
 
-    # @TODO: NOT USED
+
     async def _node2vec_embed(self):
         from graspologic import embed
 
@@ -559,154 +528,43 @@ class NetworkXStorage(BaseGraphStorage):
 
         nodes_ids = [self._graph.nodes[node_id]["id"] for node_id in nodes]
         return embeddings, nodes_ids
-    
+
     def iter_entity_nodes(self):
-        """
-        Returns an iterator over (node_id, data) pairs for all nodes with role 'entity'.
-        """
+
+
         return (
             (node_id, data)
             for node_id, data in self._graph.nodes(data=True)
             if data.get("role") == "entity"
         )
-    
+
     def iter_hyperedge_nodes(self):
-        """
-        Returns an iterator over (node_id, data) pairs for all nodes with role 'hyperedge'.
-        """
+
+
         return (
             (node_id, data)
             for node_id, data in self._graph.nodes(data=True)
             if data.get("role") == "hyperedge"
         )
-    
+
     def iter_edges(self):
-        """
-        Returns an iterator over (source_node_id, target_node_id, data) for all edges in the graph.
-        """
+
+
         return (
             (source, target, data)
             for source, target, data in self._graph.edges(data=True)
         )
 
-    # async def statistics(self, level='synonym') -> dict:
-    #     """
-    #     Computes statistics:
-    #     - total number of connected components
-    #     - number of nodes and diameters of the top 100 largest components
-    #     """
 
-
-
-    #     G = self._graph
-    #     # Degree distributions
-
-    #     # for node_id, data in G.nodes(data=True):
-    #     #     role = data.get("role")
-    #     #     deg = G.degree(node_id)
-    #     #     if role == "entity":
-    #     #         entity_degrees.append(deg)
-    #     #     elif role == "hyperedge":
-    #     #         hyperedge_degrees.append(deg)
-    #     entity_nodes = [node_id for node_id, data in G.nodes(data=True) if data.get("role") == "entity"]
-    #     entity_degrees = await asyncio.gather(
-    #         *[self.get_entity_degree(node_id, mode='hyperedge(get_synonyms)') for node_id in entity_nodes]
-    #     )
-
-    #     hyperedge_nodes = [node_id for node_id, data in G.nodes(data=True) if data.get("role") == "hyperedge"]
-    #     hyperedge_degrees = await asyncio.gather(
-    #         *[self.get_hyperedge_degree(node_id) for node_id in hyperedge_nodes]
-    #     )
-
-    #     # for node_id, data in G.nodes(data=True):
-    #     #     role = data.get("role")
-    #     #     if role == "entity":
-    #     #         entity_degrees.append(len(await self.get_entity_hyperedges(node_id, get_synonyms=True)))
-    #     #     elif role == "hyperedge":
-    #     #         hyperedge_degrees.append(G.degree(node_id))
-
-    #     entity_degree_dist = dict(Counter(entity_degrees))
-    #     hyperedge_degree_dist = dict(Counter(hyperedge_degrees))
-
-    #     entity_degree_dist_list = sorted(entity_degree_dist.items(), key=lambda x: x[0], reverse=True)
-    #     hyperedge_degree_dist_list = sorted(hyperedge_degree_dist.items(), key=lambda x: x[0], reverse=True)
-
-    #     logger.info(
-    #         f"Entity degree distribution (dgr,cnt): {entity_degree_dist_list}, "
-    #         f"Hyperedge degree distribution (dgr,cnt): {hyperedge_degree_dist_list}"
-    #     )
-
-
-    #     if level not in self.edge_roles:
-    #         raise ValueError("Invalid level. Choose from 'link', 'synonym', or 'similar'.")
-        
-    #     if level == 'link':
-    #         edges = [
-    #             (u, v) for u, v, data in self._graph.edges(data=True)
-    #             if data.get("role", 'link') == 'link'
-    #         ]
-    #         G = self._graph.edge_subgraph(edges).copy()
-    #     elif level == 'synonym':
-    #         edges = [
-    #             (u, v) for u, v, data in self._graph.edges(data=True)
-    #             if data.get("role", 'link') == 'link' or data.get("role", 'link') == 'synonym'
-    #         ]
-    #         G = self._graph.edge_subgraph(edges).copy()
-        
-    #     else:
-    #         pass
-    #         # Filter out only edges with role="link" or "synonym"
-
-    #     if G.is_directed():
-    #         components = list(nx.weakly_connected_components(G))
-    #     else:
-    #         components = list(nx.connected_components(G))
-
-    #     # Sort components by size (largest first)
-    #     components.sort(key=len, reverse=True)
-
-    #     size_list = []
-    #     diameters_list = []
-
-    #     for comp_nodes in components[:100]:
-    #         subgraph = G.subgraph(comp_nodes)
-    #         node_role_count = count_node_roles(subgraph)
-    #         size_list.append((node_role_count['entity'], node_role_count['hyperedge']))
-            
-            
-    #         # if node_role_count["entity"] == 1:
-    #         #     diameter = 0
-    #         # else:
-    #         #     try:
-    #         #         diameter = nx.diameter(subgraph)
-    #         #     except nx.NetworkXError:
-    #         #         diameter = None
-    #         # diameters_list.append(diameter)
-
-    #     logger.info(
-    #         f"Total number of connected components: {len(components)}, "
-    #         f"Top 100 component sizes (entities, hyperedges): {size_list}"
-    #     )
-        
-    #     return {
-    #         "total_number_of_components": len(components),
-    #         "top_100_component_stats": {
-    #             "component_size(entities,hyperedges)": size_list,
-    #             # "diameters": diameters_list, 
-    #         },
-    #         "entity_degree_distribution": entity_degree_dist_list,
-    #         "hyperedge_degree_distribution": hyperedge_degree_dist_list,
-    #     }
-    
     def get_similar_components(self) -> list[set]:
-        # Filter out only edges with role="similar"
+
         similar_edges = [
             (u, v) for u, v, data in self._graph.edges(data=True)
             if data.get("role") == "similar"
         ]
-        # Create a subgraph with only "similar" edges
+
         similar_subgraph = self._graph.edge_subgraph(similar_edges).copy()
         components = list(nx.connected_components(similar_subgraph))
 
         return components
-    
+
