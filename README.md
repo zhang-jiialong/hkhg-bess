@@ -19,7 +19,7 @@ Install a CUDA-enabled PyTorch build separately when GPU reranking is required.
 
 ## 2. Download the datasets
 
-The GitHub repository contains only the empty data directory structure. Download
+Download
 the data archive separately and extract it into the repository root.
 
 ```text
@@ -31,32 +31,6 @@ After extraction, the relevant layout must be:
 
 ```text
 hkhg/
-│
-├── README.md
-├── requirements.txt
-├── runtime_config.example.json
-├── configs/
-│   └── default.json
-│
-├── HKHG/
-│   ├── HKHG.py
-│   ├── prompt.py
-│   ├── operate.py
-│   ├── storage.py
-│   └── llm.py
-│
-├── contexts/
-│   ├── bms_contexts.json
-│   ├── hlib_contexts.json
-│   ├── flb_contexts.json
-│   ├── pb_contexts.json
-│   ├── incident_liverpool_contexts.json
-│   ├── incident_mcmicken_contexts.json
-│   ├── agriculture_contexts.json
-│   ├── cs_contexts.json
-│   ├── hypertension_contexts.json
-│   ├── legal_contexts.json
-│   └── mix_contexts.json
 │
 ├── datasets/
 │   ├── README.md
@@ -111,37 +85,13 @@ hkhg/
 │       │   └── {context,questions,graph}/
 │       └── mix/
 │           └── {context,questions,graph}/
-│
-├── eval/
-├── Retrieve/
-├── examples/
-│   └── minimal_example/
-│       ├── context/
-│       ├── questions/
-│       ├── README.md
-│       ├── run_end_to_end.sh
-│       └── verify_outputs.py
-├── construct_core_configurable_20260515.py
-├── run_all_visited_selection_retrieval_only_20260604.py
-└── eval_existing_prompts_think_answer_from_retrieval_20260608.py
-```
 
-Each downloaded `graph/` directory must contain at least:
-
-```text
-graph_chunk_entity_relation.graphml
-kv_store_full_docs.json
-kv_store_text_chunks.json
-vdb_chunks.json
-vdb_entities.json
-vdb_entity_names.json
-vdb_hyperedges.json
 ```
 
 ## 3. Configure the API
 
 Copy the example configuration and insert credentials for an OpenAI-compatible
-endpoint. Do not commit `runtime_config.json`.
+endpoint. 
 
 ```bash
 cp runtime_config.example.json runtime_config.json
@@ -259,17 +209,3 @@ above. To use another configuration file, pass its path as the only argument.
 See `examples/minimal_example/README.md` for runtime configuration, output
 paths, reranker setup, and evaluation scope.
 
-## 8. Main files
-
-```text
-construct_core_configurable_20260515.py
-run_all_visited_selection_retrieval_only_20260604.py
-eval_existing_prompts_think_answer_from_retrieval_20260608.py
-run_l0_only_all_visited_retrieval_20260608.py
-run_layer_wise_topk_retrieval_only_20260608.py
-configs/default.json
-HKHG/prompt.py
-examples/minimal_example/run_end_to_end.sh
-```
-
-Run any entry point with `--help` to inspect all available options.
