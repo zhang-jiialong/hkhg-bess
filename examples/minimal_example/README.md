@@ -51,8 +51,3 @@ The run writes temporary outputs under:
 data/work/minimal_example/
 examples/minimal_example/output/
 ```
-
-The short-form run reports EM, F1, and G-E. R-S is skipped. The long-form run
-performs retrieval and answer generation. `verify_outputs.py` checks that the
-graph, retrieval outputs, generated answers, and short-form metrics exist and
-that G-E scoring completed without a fallback score.
