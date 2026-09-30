@@ -1,0 +1,360 @@
+# 2020-09-15 UK_ Liverpool - Investigative Report (1)
+
+## 1 SUMMARY AND KEY LEARNING
+Merseyside Fire and Rescue Service (MFRS) attended a fire incident at Orsted Battery Energy Storage System (BESS), on Carnegie Road, Liverpool on 15th September. The full details of the attendance, operational findings and subsequent investigation are contained within the following report. The key learning points are highlighted below:
+
+1. BESS is a rapidly emerging technology with a growing number of sites nationally and internationally.
+2. BESS include several different battery types; the Orsted BESS on Carnegie Road is the lithium ion (Li-Ion) type of BESS.
+3. Li-Ion BESS have been identified as a **major fire risk** by the American International Group (AIG), a global insurance company in their paper on managing the risks at these sites<sup>1</sup>.
+4. Whilst there have been a number of significant BESS fires internationally, the Orsted BESS fire incident in Liverpool appears to be the first to occur within the UK.
+5. The operational risk information specific to this site and to the fire risks from BESS available to responding crews was inadequate. This learning highlights a wider gap on the awareness of BESS sites and their inherent fire risks.
+6. The Carnegie Road site is remotely managed by Orsted in Denmark. This includes operation, isolation and monitoring for this site.
+7. The fire investigation confirmed that an automatic fire alarm system was present and actuated due to the ignition of the BESS. However, further investigation is underway to determine why Orsted remote management failed to alert MFRS at the time of this actuation.
+8. **An automatic fire suppression system was fitted but failed to actuate.**
+9. The fire caused a significant blast event, with debris being propelled between 6 and 22m from the point of origin. This explosion occurred prior to the arrival of responding fire crews.
+10. **The explosion potential is a significant risk to emergency responders that has caused significant injury to firefighters at fire incidents on international BESS sites.**
+11. The presence of residential premises adjacent to the Carnegie Road BESS site raises concerns regarding the off-site potential from fire incident risks at BESS sites to the local community.
+12. The nature of Li-Ion cells produces a phenomenon called **“thermal runaway”**. This is a recycled heating process, where once cooling ceases, temperatures within the unit rise, leading to reignition.
+13. **Once water was applied, the resulting run-off contained Hydrofluoric Acid (HF) as a product of reaction between the cells and water contact. The run-off was contained on site.**
+14. Bureau Veritas (BV) scientific advisers identified the potential for the smoke plume to contain HF and Hydrochloric Acids as a product of burning lithium cells, **however, the dilution rate within the plume deemed the concentration as negligible.**
+15. Further investigation is underway to fully understand the regulatory regime that applies to BESS sites.
+
+## 2 INCIDENT DETAILS:
+
+At 00:49hrs on 15th September 2020, MFRS Fire Control received numerous calls reporting a large explosion with smoke and flames visible in the vicinity of the Lister Fisheries and Pet Centre, Lister Drive, Tuebrook, near to Carnegie Road.
+
+Two appliances, from Old Swan fire station (call-sign M16P1) and Liverpool City Centre fire station (call-sign M11P1), were mobilised to the incident as per the pre-determined attendance. On arrival they discovered a large container unit fully involved in fire with evidence consistent of a blast. One of the container doors had been ejected from its setting and was laying some 6 metres away within the secure compound. The compound is highlighted in yellow on the map below:
+
+The first crew established a main jet as an initial defensive firefighting tactic and after a thorough assessment the Incident Commander (IC) identified that the installation was an electrical battery system. A second branch was placed to protect the nearby Fisheries building.
+
+An early assistance message for “make pumps 5” was sent to request resources to support water provision and personnel demands. A Station Manager (SM) was mobilised and assumed command of the incident at 01:32 hours, implementing sectorised command structure for the effective control of the incident. At this point it was confirmed that on-site signage identified that the site was a Li-Ion BESS comprising of three storage units and one control unit.
+
+The fire was limited to one of the storage units. Firefighting actions were elevated in response to the incident with a total of three main jets and two ground monitors for cooling and protecting surrounding risks.
+
+At 01:23 hours Fire Control attempted to contact the listed key holder and responsible person for the site. The key holder did not answer the call so the control operator left an answerphone message.
+
+Orsted Energy, who are responsible for remotely managing the site from Denmark, first made contact with Fire Control at approximately 01:30 hours. Orsted advised that the site posed a substantial electrical hazard to emergency responders stating that the storage unit which was involved in fire contained a 20 mW grid. Orsted were able to alert a keyholder to attend.
+
+An automatic fire suppression system was present but did not activate. The reasons for this are presently unknown and are being investigated by Orsted BESS specialists.
+
+Due to the nature of the contents the incident was declared as a fire containing hazardous materials and a Hazardous Materials Environmental Protection Officer (HMEPO) was requested. The HMEPO established communications with BV (3rd party scientific support to MFRS) en route to advise of the incident.
+
+At 01:35hrs a Group Manager (GM) was informed of the incident and determined to attend on the basis of the hazardous nature of the incident. The GM was on scene at 01:49 hours and later took charge of the incident.
+
+Further information was provided by Orsted at 01:59 hours confirming a 33 kV high voltage battery hazard within the unit and the presence of Li-Ion cells. BV via the HMEPO provided additional information on the hazards likely to be associated with this incident type including the potential presence of HF in the smoke plume.
+
+A multi-agency meeting was held at 02:25 hours. Messages regarding the toxicity of the plume were communicated via the HMEPO to the scene of operations and the immediate community through warn and inform. Temperature monitoring of the nearest adjacent unit commenced with initial readings of 45oC at 02:25 hours.
+
+As near-by hydrant fed water supplies were inadequate to meet the needs of the ongoing firefighting, a High Volume Pump (HVP) was requested via National Resilience Fire Control for the purposes of augmenting water supplies, this was mobilised at 02:19 hours.
+
+Firefighting action from Sector 1.
+
+2 ground monitors at work.
+
+Fisheries building visible upper right corner.
+
+Following the initial request by Fire Control at 01:18 hours for the attendance of Scottish Power; at 02:46 hours Scottish Power confirmed that the 33 kV element of the site had been isolated.
+
+The HMEPO identified that there was potential for the presence of HF being released due to the nature of the fire. This release would be mixed in an unknown concentration with the firefighting water run-off. At this point the water was being managed in a French drain located under the site.
+
+At 02:51 hours the GM assumed command due to the complexity and protracted nature of the incident and off-site potential. An Orsted Technical Officer was mobilised to the incident from Lincoln (estimated time of arrival 04:30 hours).
+
+At 03:27 hours testing of the firefighting water run-off commenced with an initial reading of pH 8, confirming the presence of a base alkali in the water run-off.
+
+It had been identified that an occupied property was attached to the Fisheries and Pet Centre and by 04:19 hours fire crews had investigated and confirmed that the occupier was unharmed.
+
+Orsted continued to actively monitor the incident remotely via the CCTV system which enabled them to provide additional precautionary risk information regarding the hazards of operating in the vicinity of the involved container.
+
+The HMEPO conducted a further set of pH testing at 04:10 hours and found the levels at pH 7. The run-off water was still being contained on site.
+
+Due to elevated temperature levels from within the affected unit, operational tactics continued to deploy cooling techniques and temperature monitoring.
+
+At 04:52 hours the Orsted Technical Officer arrived at scene and liaised with the IC and provided specialist advice.
+
+Defensive firefighting continued on site for a total of 59 hours, involving predominantly a 2 pump attendance (concluding 17th September). During this period the Incident Investigation Team attended to commence their investigation and establish the cause of the fire. HMEPOs continued to conduct localised environmental monitoring throughout this period.
+
+Aerial footage was recorded from scene following a request to Greater Manchester Fire and Rescue Service (GMFRS) for the use of a drone (attending at 12:41hrs on 16th of September).
+
+Firefighting operations ceased with a full external handover at 10:44hrs on 17th September. At the point of hand over the pH levels within the water run-off were neutral (pH 7) but high alkaline levels were recorded within the unit (pH 14).
+
+All operational MFRS resources left site by 11:00hrs on the $1 7 ^ { \mathrm { t h } }$ September.
+
+## 3 TIMELINE:
+
+## 4 INCIDENT PHOTOGRAPHS:
+
+Fire development from the unit at approximately 01:30 hours.
+
+Note the intensity of fire and therefore heat from the centre of the unit and extension of flame into the plume.
+
+Ground monitors in use and personnel upwind of plume approximately 03:00 hours.
+
+Information on plume toxicity gained at this point.
+
+Ground monitor in use at approximately 05:15hrs.
+
+Note sections of railings opened by MFRS to allow straight play of monitor jet.
+
+Image above: Taken from GMFRS AIR Unit. Full extent of damage visible. Roof mounted cooling units ejected to side of unit. Pressure damage visible along length of unit. Note scorching of top edge of second unit to mid-right of image. Firefighting tactics mitigated further spread and damaged beyond original unit and blast.
+
+Image left: FI Photography, note pressure damage and expansion of unit above burn line pattern. Remains of cooling unit pictured to left hand side.
+
+## 5 OPERATIONAL ASSURANCE TEAM
+
+- AREAS FOR FURTHER INVESTIGATION
+
+Foreword: Due to the unique nature of this incident the areas for investigation will include details of the construction, hazards and issues presented by Li-Ion units when involved in fire. \*This information is openly available and was sourced from the public domain.
+
+PDA:
+
+The initial PDA of two appliances is in accordance with MFRS mobilising action plans attached to an incident type of a reported explosion/fire in the open. This information was given by the caller prior to alerting crews.
+
+Firefighting Tactics:
+
+Water was used as the sole firefighting medium for the duration of the incident due to its immediate cooling properties. The initial attending crews utilised main jets from the edge of the compound due to anticipated firefighter risks.
+
+After the recognition that this site was an electrical grid battery installation, the immediate tactical plan was to adopt defensive firefighting tactics by implementing covering jets around the unit and not to deploy firefighters into the immediate vicinity.
+
+When resources allowed further ground monitors were brought into use to contain the
+
+fire, mitigate further fire spread and protect surrounding buildings.
+
+The fire was brought under control by 06:30hrs, however the energy dissipated by the fire and continual recycling of heat from the Li-Ion store was to prove an issue during the latter stages of the incident as it continued to burn. This incident type required a continual and prolonged cycle of cooling and temperature monitoring. The initial incident commander considered the use of Compressed Air Foam System (CAFS) and discounted it as an appropriate firefighting media based on the nature of the incident.
+
+Observation: The selection of water was appropriate to the requirements of the incident.
+
+Observation: The unintended consequence of the firefighting action was the release of HF. This occurs due to hydrogen fluoride elements within the unit being produced during the combustion process. The tactic of applying water is correct and necessary to resolve the incident type. A containment strategy was not necessary for this particular incident due to the drain and soak away.
+
+Action: To notify the wider UKFRS sector and share findings through the National Fire Chief’s Council (NFCC) and National Operational Learning (NOL) for the continued development of National Operational Guidance (NOG).
+
+Water Supplies:
+
+Immediate water supplies were identified with hydrants being located at the junction of Carnegie Road and Lister Drive for the provision of initial jets. As the incident developed consideration was given to whether the original hydrant and further hydrants identified off Green Lane and Carnegie Road would be sufficient to support operations.
+
+A High Volume Pump (HVP) was requested to support operations. The HVP was mobilised from Belle Vale fire station and located at Green Lane to inspect a 600mm hydrant as identified through the MDT. Concurrently, a second set of hydrants had been utilised from Lister Drive and water supplies were deemed adequate to feed 2 ground monitors and 3 main jets. This was to be the maximum required water output for the incident enabling the HVP to be released.
+
+Observation: The MDT hydrant overlays were used to good effect, identifying two nearby and separate mains and a large bore 600 mm hydrant.
+
+Hazardous Material Environmental Protection Officer:
+
+A HMEPO was requested to attend the incident to support the incident commander with information on hazards associated with the smoke plume and water run-off. The HMEPO established communications with BV who act as our 3rd party specialist scientific support. BV were able to advise of the potential for Hydrogen fluoride to be released from the fire which when mixed with water would produce Hydrofluoric Acid potentially in the smoke plume and in the water run-off.
+
+HF is clear and colourless liquid which is both corrosive and toxic, it is however a weak acid and easily diluted.
+
+A CHEMET report was not requested on the night as wind speeds were low, and conditions were dry. The plume was slow moving and of short range in a northerly direction. There were no residential properties in the vicinity and firefighting operations were reconfigured to be conducted upwind. All agencies on site were informed of the potential hazards and media messaging sent out to warn and inform residents beyond the initial cordons.
+
+The HMEPO conducted testing of the water run-off, returning results ranging between 8 and 9 pH suggesting a base (alkali) being present.
+
+It was reported that the French drain was filled with gravel covered with a fine lime/cement powder which may have contributed to the alkaline results. All water was contained within this area. Other possibilities for these results include the easy dilution of the acid with the amounts of water being applied to the fire and the water reacting with the Li-Ion from the site to produce lithium hydroxide in the water. This being an alkali which in turn would react with any acid to neutralise it.
+
+Observation: Notable practice from the HMEPO in contacting BV early, in recognition that the risk may be new or unanticipated. Good standard of information fed in from BV and from Orsted via Fire Control.
+
+Observation: The plume hazards were not confirmed but highly suspected to contain HF. Decision to inform crews to remain upwind supported Firefighter safety. Corporate Communications requested to promote close windows/doors message to partner agencies.
+
+Observation: The run-off was tested and confirmed to be moderately alkaline in nature and although HF was considered to be present, HF has a pH of 3.27 per 1 mol and so should show as red/orange during pH testing. The alkaline return of 8-9 suggests that the vast drain base contained a lime element which has potentially neutralized any acidic run off. Whether this was by design or was a coincidence is unknown.
+
+Observation: Final pH readings confirm neutral readings outside of the unit and a high alkaline content within, (pH of 14) consistent with the base metals used in Li-Ion cells. These metals include cobalt, nickel or manganese ions which are alkaline in nature. It is unconfirmed which metal, if not all, were present within the unit.
+
+Action: Identified installations within station areas are to have Site Specific Risk Information (SSRI) revisited to include health, chemical and environmental hazards underpinned by informed data. This information is to be gathered by operational crews in line with existing procedures for familiarisation of local risks.
+
+Action: The SSRI refresh should consider combined chemical and health hazards within typical units and should be clearly identifiable to MFRS personnel accessing the risk information for any future incidents at BESS sites. This information should be present and easily obtainable on site.
+
+Action: The HMEPO role was crucial in this instance in preserving Firefighter safety. Fire Control action plans should be amended to mobilise a HMEPO if units of a similar nature are identified and involved in fire in future incidents.
+
+Understanding Lithium Ion Battery Units:
+
+To fully understand the risk, a distinction between primary (non-rechargeable) and secondary (rechargeable) lithium ion (Li-Ion) units needs to be established. It is reported that the BESS units contain rechargeable, secondary type units. A pack (or unit) contains varying amounts of Li-Ion cells. Each cell has a positive (anode) and negative (cathode) which are connected by the conducting ion (electrolyte). In Li-Ion installations it is important to note that the electrolyte is a liquid.
+
+Within each cell is a component called the separator, this prevents cross ionisation of the cell when discharging (to the anode side) or charging (to the cathode side).
+
+This information is represented in the diagram below: (Copyright Denios Ltd).
+
+How a lithium cell works
+
+Testing for industry the use of Li-Ion batteries includes ‘performance when subjected to: Altitude, Vibration, Mechanical Shock, Forced Discharge, Crush, Blow and Thermal Exposure.
+
+At this point it is important to be aware that technical information received at the incident suggests the risk of flammability is enhanced when cells are at 100 degrees Celsius or above. The temperature within the units is controlled by the fixed units situated on the roof of each storage container.
+
+Data on risk factors for fire are shown below: (Copyright Denios Ltd – public domain):
+
+From this data we can see the use of the term “thermal runaway.” This is indicative of the chain reaction of neighbouring cells heating, leading to an explosion event. The liquid state of the electrolyte is the primary vehicle for conversion to HF in the run off.
+
+Li-Ion BESS unit construction:
+
+Although designs may differ according to manufacturer, the principle of BESS units are the same on an international scale. Each unit consists of a steel container, with access
+
+from one or both ends.
+
+Li-Ion cells are configured along the walls or vertices of each unit, with conductors terminating in a single point to the destination and charging/control unit. A fixed fire suppression system is installed to control ignition of batteries, usually as a deluge or flooding system comprising of a chemical. In the case of the Orsted incident, this was NOVEC 1230.
+
+Finally, a series of cooling units are fixed to the roof to remove heated air from the unit and maintain safe operating temperatures. A typical design that is representative of Orsted’s installation is shown below.
+
+Industry Recommendation for extinguishing Li-Ion Fires:
+
+Industry guidance on extinguishing fires involving Li-Ion cells states that the combustion process liberates oxygen and as such a fire involving a BESS unit should be identified as a “Class D” metal fire and extinguished using a proprietary powder or granular agent.
+
+A typical granular agent would be silicon oxide which acts as a thermal blanket when exposed to fire, melting and forming a crust over involved objects. An alternative to the above is an aerosol agent classed as a non-halon under legislation and which is fixable to the internal aspect of the unit.
+
+NOVEC 1230, the extinguishing agent fixed to the Orsted unit, is the latter type of agent, an aerosol of fluorinated ketones. The installation is pressurised with nitrogen, and is released on detection of fire conditions within the unit. NOVEC 1230 is stored as a liquid but discharges as an aerosol, evaporating 50 times quicker than water, absorbing heat and smothering any fire progression.
+
+Industry guidance does not preclude the use of water due to cooling effects and ready availability. It does, however, warn that fluorinated products such as HF or other acids such as hydrochloric acid may be secreted in run offs or vapours and that any soak away may cause environmental damage. This was consistent with BV advice on the night of the Orsted incident.
+
+GMFRS AIR unit aerial view of Orsted BESS:
+
+International Incidents: (with links)
+
+This incident is the first reported fire involving a Li-Ion BESS unit in the UK. As such, the intent of this report is to inform internally, then nationally through the NFCC and NOL, to support firefighter safety and ensure professional knowledge is current with emerging risks. At an international level, incidents of note have taken place in America and in Korea:
+
+Arizona Incident
+
+On April 19th 2019, an explosion occurred during firefighting activities at a lithium ion BESS unit in the Arizona desert. The initial firefighting crew were supported by a HAZMAT team who were detailed to enter the compound, take gas readings and effect an entry with a jet to the BESS unit.
+
+On entry to the unit, a major blast deflagration event took place, injuring four personnel including the Captain of the crew. Two of the four injured were airlifted from the scene following attempts by the crew to intubate and secure airways. Of the four, the following injuries were received (with call signs):
+
+ E193 Captain suffered a traumatic brain injury, an eye injury, spine damage, broken ribs, a broken scapula, thermal and chemical burns, internal bleeding, two broken ankles, and a broken foot.
+
+ E193 FE suffered a traumatic brain injury, a collapsed lung, broken ribs, a broken leg, a separated shoulder, laceration of the liver, thermal and chemical burns, a missing tooth, and facial lacerations.
+
+ HM193 FF1 suffered an injured Achilles tendon, a fractured patella, a broken leg, nerve damage in his leg, spine damage, thermal burns, tooth damage, and facial lacerations.
+
+ HM193 FF2 suffered facial lacerations.
+
+ Surprise Fire-Medical Department E304 Captain, E304 FF, BR304 FF, and T304 FF, as well as one officer from the Surprise Police Department, were transported to the Banner Del E Webb Medical Centre and observed overnight for exposure to HCN. These individuals were released from the hospital the following morning with no noticeable lasting effects from HCN exposure.
+
+The full report is available at https://ulfirefightersafety.org/posts/four-firefightersinjured-in-lithium-ion-battery-energy-storage-system-explosion.html
+
+South Korea Incident
+
+A second article detailing 23 Li-Ion BESS fires in South Korea during 2018 can be found online via https://www.energy-storage.news/news/koreas-ess-fires-batteries-not-toblame-but-industry-takes-hit-anyway. The article details the emerging use of Li-Ion units as a green, alternative power source.
+
+BESS Sites in Merseyside
+
+The diagram below represents sites operational or under construction in Merseyside. A full map of UK sites is available by following the link:
+
+http://www.mygridgb.co.uk/map/.
+
+Sites are identified by white bar on red background.
+
+## 6 INCIDENT INVESTIGATION TEAM FINDINGS:
+
+MFRS’ Incident Investigation Team attended following the incident to determine the suspected cause of ignition, the behaviour of the unit on the lead up to and during the fire, and to liaise with the site operatives, post incident, to establish not only the events but also any recommendations for unit construction. A full Fire Investigation report has been compiled in line with current MFRS investigation procedures. A summary from the Fire Investigation (FI) report states:
+
+‘Initial scene assessment conducted along with photographs and air unit footage being captured. Briefing from site operator on how the site and plant works. After an external examination of the container, reviewing data from CCTV footage, there is evidence of a deflagration due to the ignition of gases that had been given off from the lithium battery cells. This would have been a mix of toxic and explosive fumes. When LiBs (Lithium ion Batteries) go into thermal runaway they generate a dense, white vapour containing hydrogen, hydrogen cyanide, hydrogen chloride, a large range of flammable/explosive hydrocarbons, carbon monoxide, carbon dioxide and droplets of the organic solvents used in the cells’
+
+Considerations following FI report:
+
+ Introduce separators under the site to container fire water run off
+
+Have ‘In rack’ suppression as the external system may not penetrate the racks
+
+ Markings externally to the containers (similar to aircraft) to notify crews where a lance or stinger can be used without damaging any cells
+
+Retro fit vents and pressure relief valves to the containers
+
+ Gerda box with action cards, plans and a risk assessment
+
+External audible and or visual warning to denote if the detection has activated or if the suppression has been deployed
+
+ Remote activation of the suppression system so that the monitoring station can activate
+
+ Blast walls across each entrance and between units to reduce the blast risk to first responders and limit radiated heat to other units
+
+Direct 24-hour contact with the monitoring station for control to call and gain information i.e., has the suppression system activated, is the container on fire.
+
+The initial suspected cause was deemed by the FI as:
+
+‘Accidental ignition caused by a lithium battery failure transitioning into thermal runaway’.
+
+The key elements of the findings from the FI report are that:
+
+ The NOVEC 1230 system did not actuate, confirmed by internal CCTV.
+
+ A white gas was liberated prior to ignition, indicative of a lithium ion cell failure and liberation of toxic gases detailed above.
+
+ The potential ignition cause is allocated to the failure of a single lithium cell, one of several due for replacement as near end of service life.
+
+ A major blast event was captured by CCTV externally.
+
+ A pressure relief valve may have delayed or prevented a blast event.
+
+ Several elements were ejected from the unit, a component of one of the air cooling units found at 74ft (22.5m) from the unit.
+
+The findings of the report are accompanied by detailed photography of the affected unit and of the internal construction, features and installations in a neighbouring unit, as detailed on the forthcoming pages:
+
+Unaffected unit:
+
+Image above: Exterior of unit with pressure damage to side.
+
+Image below left: Fire damaged NOVEC 1230 unit.
+
+## 7 DEBRIEF MODULE -
+
+ORGANISATIONAL/TEAM/INDIVIDUAL LEARNING
+
+A local MFRS debrief was created for the incident on the OSHENS electronic recording database, utilised by Merseyside operational staff, inviting attending officers to provide a response, following discussions with attending crews. 18 invites to debrief were sent, including the attending GM, SMs, WMs and Fire Control Watch Officer.
+
+The debrief is;
+
+Inc. 018965 18/9/20 Debrief 004931, was issued and received a number of responses aligning to themes which are presented below. All returns were analysed by OAT and for manageability of the document, responses relating to similar issues are grouped together.
+
+Notable Good Practice
+
+## 8 NEXT STEPS:
+
+MFRS are committed to supporting the process of learning for the Fire Sector on a local, national and international scale in respect to new incident types or emerging Firefighter hazards. This process includes support of NOL which forms part of the maintenance process for the NOG products and will be a vital element of NOG in today’s society. NOL outcomes will be one of the factors considered when changes are made to guidance and will ensure the review of NOG is as effective as possible.
+
+## 9 GLOSSARY:
+
+## 10 Annex A:
+
+### 10.1 MFRS BESS Safety Flash
+
+Orsted - Battery Energy Storage System (BESS) Incident
+
+Merseyside Fire and Rescue Service (MFRS) attended a fire incident at Orsted BESS, Carnegie Road, Old Swan on 15thSeptember 2020. The initial attendance of two fire appliances were confronted with a well-developed fire on arrival. There was evidence of blast damage to the container unit with the doors at each end and the air cooling units from the roof being blown clear. "Make pumps 5" was requested within 10 minutes of initial attendance.
+
+This was a 20mW/33kV stored energy site consisting of 3 battery units, a control unit and associated plant. Each battery unit houses approximately 45 banks containing varying amounts of lithium cells according to the unit size and a fire suppression system.
+
+The BESS fire incident presented significant, serious and varied risks to crews:
+
+Lithium lon batteries prone to "thermal runaway" (a chain reaction of significant over-heating causes / sustains ignition and further re-ignition), required copious water supplies over a prolonged period to control and extinguish any fire
+
+•High-voltage electricity - up to 33kV - risk of electrocution
+
+•Hydrofluoric acid in water run-off or gas cloud/smoke.
+
+An automatic fire suppression system was fitted but failed to operate. Had it operated the extinguishing media was an asphyxiant.
+
+Automatic fire alarm systems actuated but the monitoring agent failed to alert MFRS Fire Control.
+
+Units are pressurised under fire conditions – high risk of injuries from blasts / large pieces of flying debris (heavy, metal doors had been ejected some distance by the blast and other large pieces of debris were projected over 22m away).
+
+Firefighter Safety Flash – Orsted BESS
+
+Operational Response considerations:
+
+Early establishment of inner cordons and utilisation of defensive fire-fighting to ensure safety of the emergency responders from blast/toxic/electrical/asphyxiant hazards.
+
+•Early request for HazMat/Scientific advice to support incident command decision making
+
+•Outer cordons and 'warning and informing' public and any relevant multi-agencies.
+
+• Contain fire water run-off to prevent environmental damage.
+
+•Prolonged temperature monitoring of the affected units for several days post extinguishing of the fire due to re-ignition risks of lithium batteries.
+
+Operational Preparedness considerations
+
+Fire Crews to be familiar with the location, recognition, hazards and control measures relating to BESS sites.
+
+• All BESS sites within station grounds should have up-to-date SSRI completed as a priority.
+
+o Sites in operation or earmarked for construction can be seen via an online interactive map, available at http://www.mygridgb.co.uk/map/.
+
+Fire Crews are required to review the learning from previous significant fire incidents on BESS sites:
+
+Arizona, 2019: Four Fire Department personnel received life changing blast injuries.
+
+South Korea, 2018: 23 separate incidents of fire at various locations. https://www.energy-
+
+MFRS Orsted BESS Significant Incident Review report available via the MFRS intranet portal.

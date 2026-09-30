@@ -22,13 +22,7 @@ logs/
 *.tmp
 *.bak
 *~
-graph/
+datasets/**/graph/
 
-# Downloaded dataset payloads are distributed separately.
 contexts/*.json
 !contexts/.gitkeep
-datasets/**/context/*
-datasets/**/questions/*
-datasets/**/graph/*
-!datasets/**/.gitkeep
-!datasets/README.md
